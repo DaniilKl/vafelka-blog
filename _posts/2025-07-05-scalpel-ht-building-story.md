@@ -2,6 +2,7 @@
 layout: post
 title: "Building Scalpel HT bike"
 author: "Daniil"
+tags: cycling engineering
 excerpt_separator: "some quote..."
 ---
 
