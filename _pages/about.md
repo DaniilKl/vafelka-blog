@@ -1,15 +1,33 @@
 ---
 layout: post
 title: "About"
-author: "Chester"
+author: "Daniil"
 permalink: /about/
 ---
 
-A friend of mine writes short stories. One sunny day, I asked if he wanted a website to showcase his works and he agreed. I decided to use GitHub Pages to host his site. That way he wouldn't have to buy a domain and a server.
+This is a set of pages where I share some of my thoughts and ideas. Some of them
+are long and philosophical that take time to read, but some are like a night
+dream: short and amusing.
 
-While doing some research up on GitHub Pages, I accidentally chanced upon this _simple, blog-aware, static site generator_ called [Jekyll](https://jekyllrb.com/) which works really well with GitHub Pages. I figured it would do just fine for my friend and I set about searching for a pretty theme. I wanted a theme with a _book-ish_ vibe. Unfortunately, most of the themes were too modern. Eventually, I caved and begun working on my own theme. With the help of [Poole](https://github.com/poole/poole), the Jekyll Butler, I was able to build **Tale**.
+## About me
 
-## Contribute
-Feel free to create an issue or make a pull request on [GitHub](https://github.com/chesterhow/tale).
+Programming, electronics and cycling nerd, bookworm and very passionate in
+learning . Left his own country at seventeen years old for studying and working
+abroad, and still searching for a place to settle. Big critic of fatalism and a
+fan of what-you-are-is-what-you-do way of thinking.
 
-Thanks for reading!
+In professional life tries to be as pedantic as possible, believes that nothing
+is perfect and nobody is perfect and every solution should be questioned and
+evaluated. Likes to solve complex problems, even if it implies a lot of digging
+before stating the final solution. States that developing skills in different
+fields is important as well as perfecting a one field, because everything has
+its intersections and sometimes it is crucial to investigate something from a
+different angle.
+
+Most of the time a workaholic, but sometimes a bit lazy. Not always punctual and
+often unconsciously altruistic.
+
+Social media:
+* [Linkedin](https://www.linkedin.com/in/daniil-klimuk-9358a1271)
+* [Facebook](https://www.facebook.com/pon4ikmudrosti/)
+* [GitHub](https://github.com/DaniilKl)
