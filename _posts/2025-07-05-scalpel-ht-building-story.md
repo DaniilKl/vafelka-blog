@@ -3,10 +3,12 @@ layout: post
 title: "Cannondale Scalpel HT dreambuild"
 author: "Daniil"
 tags: cycling engineering
-excerpt_separator: "some quote..."
+excerpt_separator: <!--more-->
 ---
 
 TODO Intro
+
+<!--more-->
 
 ## Why Scalpel HT?
 
