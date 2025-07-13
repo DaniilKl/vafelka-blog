@@ -78,26 +78,27 @@ So, enough of the theory, and let's get to the real tech and the building fun.
 [scalpel-ht]: https://www.cannondale.com/en-eu/bikes/mountain/cross-country/scalpel-ht
 [scalpel]: https://www.cannondale.com/en-eu/bikes/mountain/cross-country/scalpel
 
-## The frame
+## The frame, or where it all began
 
 ![scalpel-ht-frame](/assets/images/2025-07-05-scalpel-ht-building-story/scalpel-ht-frame.png)
 _Source: https://www.cannondale.com/en-eu/owners-manuals/-/media/files/manual-uploads/my21/021_138678_can_oms%20scalpel%20ht_en.pdf_
 
-There is nothing special in the frame, it is a classical frame oxcept from the
-rear triangle, that is said to "eat" some bumps on trails. I am not an expert of
-bike geaometry, so my choise was based on argumentation "the biggest is the
-fastest" (mostly because of my height, which is 193 centimeters). Hence I chose
-the XL size. The exact numbers can be found in the [Scalpel HT owners
+There is nothing special about the frame. It is a classical frame except for
+the rear triangle, which is said to "eat" some bumps on trails. I am not an
+expert of bike geometry versus human anatomy, so my choice was based on
+argumentation logic lie "the biggest is the fastest" (mostly because of my
+height, which is 193 centimeters). Hence I chose the XL size (the biggest
+available). The exact numbers can be found in the [Scalpel HT owners
 manual][owners-manual].
 
-What I was interested in are the numbers that define what components should be
+What I was interested in were the numbers that define what components should be
 installed:
 * Fork:
   * Tapered or not tapered: **tapered**.
   * Head tube diameters:
     * Upper: **11/8in.**
     * Lower: **11/2in.**
-  * Maximum fork lenght: **530 mm.**.
+  * Maximum fork length: **530 mm.**.
 * Headset type: **Integrated 1 1/8in-1.5in FSA Orbit C-40 ACB**.
 * Bottom bracket: **83 mm. PF30**.
 * Seatpost:
@@ -110,60 +111,65 @@ installed:
   * Disk brake sizes: **160/180 mm.**.
 
 These numbers and letters will be very important when choosing the components.
-I will explain them later.
+I will explain the, for example, `Integrated 1 1/8in-1.5in FSA Orbit C-40 ACB`
+and other magic numbers later.
 
-For other details like maximum rider weight, or any frame-specific details,
-check the [Scalpel HT owners manual][owners-manual].
+For other details like maximum rider weight or any frame-specific details that
+are not important here, check the [Scalpel HT owners manual][owners-manual].
 
-### Cannondale's Assymetric integration
+### Cannondale's Asymmetric integration
 
 ![tech-standarts-meme](/assets/images/2025-07-05-scalpel-ht-building-story/tech-standarts-meme.png)
 
-Among other things I had problems during researching, the Cannondales Assymetric
-integration (I will call it Ai in this blog post) is the most scariest. Why?
-Because it changes everything in your bike build, and most exactly: the wheels
-and transmission configuration.
+Among other things I had problems during researching, the Cannondale's
+Asymmetric integration (I will call it Ai in this blog post) is the scariest.
+Why? Because it changes everything in your bike build, and most exactly: the
+wheels and transmission configuration.
 
-What is the Cannondale's Assymetric Integration and why was it invented?
+What is Cannondale's Asymmetric Integration and why was it invented?
 
 ![ai-rear-triangle](/assets/images/2025-07-05-scalpel-ht-building-story/ai-rear-triangle.jpg)
 _Source: https://support.cannondale.com/hc/en-us/articles/219101107-Ai-Asymmetric-Integration_
 
-If I understood correctly, the main reason for it to be invented - is to
-strenghten the rear wheel structure, by decreasing difference between the right
-and left rear wheel spokes length. Thought, it will not make the spokes
-on two sides perfectly the same length, that would distribute the stress applied
-to the spokes equally, because the spokes length difference depends on rear hub
-implementation-specific parameters. It will definitely significantly reduce the
-difference and increase rear wheel stiffness.
+In short, the main reason for it to be invented - is to strengthen the rear
+wheel structure, by decreasing the difference between right and left rear wheel
+spokes length. Though, it will not make the spokes on two sides perfectly the
+same length, that would distribute the stress applied to the spokes equally,
+because the spokes length difference depends on rear hub implementation-specific
+parameters, it will significantly reduce the difference and increase rear wheel
+stiffness. It was the first time I applied my school knowledge about geometry in
+practice. So there will be some interesting things to discuss later, when
+building the wheels.
 
-While generally the idea make sense and defenitely has its benefits, it comes
+While generally the idea makes sense and definitely has its benefits, it comes
 with downsides: the cassette should be shifted 6 mm. to the right. Shifting the
-cassette changes the chainline, that results in a need to correct it on
-crankset/buttom braket side, that should be shifted 6 mm to the right too. While
-the shift for the cassette is not problematic, it just moves. Adjusting the
-crankset and buttom braket to match the new chainline is more tricky.
+cassette changes the chainline, which results in a need to correct it on the
+chainring side, which should be shifted 6 mm to the right too. While the shift
+for the cassette is not problematic, it just moves. To adjust the chainline on
+the chainring side you have to play with the crankset and, probably, with the
+bottom bracket. This comes with a lot of complications, especially taking into
+account the "Cannondale's standarts".
 
-In a few wards: there are one or two possible combinations of buttom braket and
+In a few words: there are one or two possible combinations of bottom bracket and
 crankset that are suitable for Cannondale's Ai and will match the new chainline.
-And as I will explain later in [the transmission chapter](#transmission), buying
-specifically designed components from a specific manufacturers may cause to buy
-entire transmission from these manufacturers. This comes with sagnificantly
-greater costs, sometimes lower perfomance and potential problems with servising
-and replacement in future.
+And as I will explain later in the blogpost related to transmission, buying
+specifically designed components from a specific manufacturer can result in
+buying the entire transmission from these manufacturers. This comes with
+significantly greater costs, sometimes lower performance and potential problems
+with servicing and replacement in future.
 
 I did not want to bind myself to any specific technology and components, and
 wanted full freedom in customization. Hence, I should have checked whether my
-frame has this technology, and if yes - how to ommit all these proprietary
-transmission standarts. Finding the answer to these questions was a real
+frame has this technology, and if yes - how to omit all these proprietary
+transmission standards. Finding the answer to these questions was a real
 headache back then.
 
-Why a headache? Because the bicycle world is not very standartized. The top-tier
-bikes are overloaded with proprietary designs no one whant to share any numbers
+Why a headache? Because the bicycle world is not very standardized. The top-tier
+bikes are overloaded with proprietary designs no one wants to share any numbers
 about and all these "scetchy" marketing words. Consider for example [one of
 Cannondale's
-Scalpels](https://www.cannondalebikes.pl/rowery/gorskie/xc-race/scalpel/scalpel-lab71-c24035)
-frame desciption:
+Scalpel](https://www.cannondalebikes.pl/rowery/gorskie/xc-race/scalpel/scalpel-lab71-c24035)
+frame description:
 
 > Scalpel LAB71, Series 0 Carbon construction, 120mm travel, Proportional
 > Response Suspension and Geometry, FlexPivot Chainstay, full internal cable
@@ -171,17 +177,35 @@ frame desciption:
 > guide, 148x12mm thru axle, 55mm chainline, UDH, post-mount disc – 160mm
 > native.
 
-Even now I am not sure what 45% of these words mean and how do they affect the,
+Even now I am not sure what some of these words mean and how they affect the,
 for example, transmission set up.
 
-How did I figure out whether my frame has the Ai or not? Thirst things first,
+How did I figure out whether my frame has the Ai or not? First things first,
 I checked the mentioned before description of [already existing
 bikes](https://www.cannondale.com/en-eu/bikes/mountain/cross-country/scalpel-ht)
-on similar frames. And I did not faund the words `Ai Offset`, that mean, that
-the frame has the Ai. This was a a glimmer of hope that promised an easier
-build. But then I found out, that 
+on similar frames. And I did not find the words `Ai Offset`, that means the
+frames used in the bikes have the Ai. This was a glimmer of hope that
+promised an easier build. But then, while reading forums, I found out that some
+of the models of the same family might or might not have the Ai, and **there is
+no clearly declared condition on that**. For example, this might depend on the
+year the frame was produced, etc.. Compare for example the description of
+[this][scalpel-carbon-4] (has the Ai in the description) and [this][scalpel-4]
+(doesn't have the Ai in the description) Scalpels. The only difference seems to
+be the chosen language of the site (the Polish or the English language) or used
+domain name (.com and .pl)?
+
+Because I bought a frameset, not a bike, and the frameset had no information
+packed in - my paranoia raised an alarm. The reason: you must be 100% sure about
+the Ai, unless you want to gamble when buying wheels and transmission that is
+pretty expensive.
+
+The final conclusion here for me was that my frame does not have the Ai. I have
+figured out while building wheels and transmission. I will definitely mention it
+several times in future and will precise things out.
 
 [owners-manual]: https://www.cannondale.com/en-eu/owners-manuals/-/media/files/manual-uploads/my21/021_138678_can_oms%20scalpel%20ht_en.pdf
+[scalpel-4]: https://www.cannondale.com/en-eu/bikes/mountain/cross-country/scalpel/scalpel-4
+[scalpel-carbon-4]: https://www.cannondalebikes.pl/rowery/gorskie/xc-race/scalpel/scalpel-carbon-4-c24402m
 
 ## Forks and headseds
 
