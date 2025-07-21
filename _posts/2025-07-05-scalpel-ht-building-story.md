@@ -6,9 +6,19 @@ tags: cycling engineering
 excerpt_separator: <!--more-->
 ---
 
-TODO Intro
+Hello there! I have finally decided to write a blog post! This story will be
+about my first hard and expensive project, where I will describe
+the planning hell, preparing headache and, eventually, building journey of my
+first carbon XC race bicycle from scratch. I will walk you through all the
+complexities I met along the way and the knowledge I found that helped me to
+overcome them. Come and join me if you like exploring and building on your own!
 
 <!--more-->
+
+This story will be divided into a series of blog posts, because otherwise it may
+turn into a book, and I am scared of writing books as for now. This blog post
+will serve as a prologue that will smoothly start the story and outline the main
+antagonist. There will be no difficult technical details for now. So, enjoy!
 
 ## Why Scalpel HT?
 
