@@ -217,22 +217,25 @@ several times in future and will precise things out.
 [scalpel-4]: https://www.cannondale.com/en-eu/bikes/mountain/cross-country/scalpel/scalpel-4
 [scalpel-carbon-4]: https://www.cannondalebikes.pl/rowery/gorskie/xc-race/scalpel/scalpel-carbon-4-c24402m
 
-## Forks and headseds
-
-TODO
-
-## Transmission
-
-TODO
-
-## Cockpit
-
-TODO
-
-## Wheels
-
-TODO
-
 ## Summing up
 
-TODO
+So, the story begins with a frame. I think it is a classical beginning for a
+bike build. The frame defines what fork you are going to use as well as how you
+want to position yourself on the bike - that is the cockpit. After that come the
+wheels, as they depend on both: the fork and the frame. And as final step - the
+transmission, where you will be aligning the frame with the rear wheel.
+
+Therefore, there will be three more blog posts:
+* A small dive into forks and cockpits.
+* Reinventing the wheel.
+* Let it turn!
+
+And that is it for now!
+
+![maraton-gniewino-2025](/assets/images/2025-07-05-scalpel-ht-building-story/maraton-gniewino-2025.jpg)
+
+<center><em>We humans, we’re all the same. Every last one of us. For some it’s
+drinking. For some it’s women. For some, even religion. Family. The king.
+Dreams. Children. Power. All of us had to spend our lives drunk on something.
+Else we’d have no cause to keep pushing on. Everyone was a slave to something.
+</em> Kenny Ackermann, Attack on Titan</center>
