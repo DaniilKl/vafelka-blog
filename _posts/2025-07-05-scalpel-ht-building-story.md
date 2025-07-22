@@ -22,7 +22,7 @@ antagonist. There will be no difficult technical details for now. So, enjoy!
 
 ## Why Scalpel HT?
 
-![cannondale-scalpel-ht-si-2022](/assets/images/2025-07-05-scalpel-ht-building-story/cannondale-scalpel-ht-2022.jpg)
+![cannondale-scalpel-ht-si-2022]({{ site.baseurl }}/assets/images/2025-07-05-scalpel-ht-building-story/cannondale-scalpel-ht-2022.jpg)
 _Cannondale Scalpel HT 2022, source: Cannondale_
 
 [Scalpel HT][scalpel-ht] is a Cannondaile's mountain bike family that targets XC
@@ -38,7 +38,7 @@ When you are an abroad student living in a dormitory - you don't have much
 freedom in such expensive and technologically-complicated projects. Just check
 out my room while building the bike:
 
-![dorm-room-building-bike](/assets/images/2025-07-05-scalpel-ht-building-story/dorm-room-building-bike.jpg)
+![dorm-room-building-bike]({{ site.baseurl }}/assets/images/2025-07-05-scalpel-ht-building-story/dorm-room-building-bike.jpg)
 _Somewhere in Poland, author: Daniil_
 
 At this time, I prayed no one from the dormitory administration would come and
@@ -90,7 +90,7 @@ So, enough of the theory, and let's get to the real tech and the building fun.
 
 ## The frame, or where it all began
 
-![scalpel-ht-frame](/assets/images/2025-07-05-scalpel-ht-building-story/scalpel-ht-frame.png)
+![scalpel-ht-frame]({{ site.baseurl }}/assets/images/2025-07-05-scalpel-ht-building-story/scalpel-ht-frame.png)
 _Source: https://www.cannondale.com/en-eu/owners-manuals/-/media/files/manual-uploads/my21/021_138678_can_oms%20scalpel%20ht_en.pdf_
 
 There is nothing special about the frame. It is a classical frame except for
@@ -129,7 +129,7 @@ are not important here, check the [Scalpel HT owners manual][owners-manual].
 
 ### Cannondale's Asymmetric integration
 
-![tech-standarts-meme](/assets/images/2025-07-05-scalpel-ht-building-story/tech-standarts-meme.png)
+![tech-standarts-meme]({{ site.baseurl }}/assets/images/2025-07-05-scalpel-ht-building-story/tech-standarts-meme.png)
 
 Among other things I had problems during researching, the Cannondale's
 Asymmetric integration (I will call it Ai in this blog post) is the scariest.
@@ -138,7 +138,7 @@ wheels and transmission configuration.
 
 What is Cannondale's Asymmetric Integration and why was it invented?
 
-![ai-rear-triangle](/assets/images/2025-07-05-scalpel-ht-building-story/ai-rear-triangle.jpg)
+![ai-rear-triangle]({{ site.baseurl }}/assets/images/2025-07-05-scalpel-ht-building-story/ai-rear-triangle.jpg)
 _Source: https://support.cannondale.com/hc/en-us/articles/219101107-Ai-Asymmetric-Integration_
 
 In short, the main reason for it to be invented - is to strengthen the rear
@@ -232,7 +232,7 @@ Therefore, there will be three more blog posts:
 
 And that is it for now!
 
-![maraton-gniewino-2025](/assets/images/2025-07-05-scalpel-ht-building-story/maraton-gniewino-2025.jpg)
+![maraton-gniewino-2025]({{ site.baseurl }}/assets/images/2025-07-05-scalpel-ht-building-story/maraton-gniewino-2025.jpg)
 
 <center><em>We humans, we’re all the same. Every last one of us. For some it’s
 drinking. For some it’s women. For some, even religion. Family. The king.
