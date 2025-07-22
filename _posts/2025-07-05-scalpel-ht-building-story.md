@@ -96,7 +96,7 @@ _Source: https://www.cannondale.com/en-eu/owners-manuals/-/media/files/manual-up
 There is nothing special about the frame. It is a classical frame except for
 the rear triangle, which is said to "eat" some bumps on trails. I am not an
 expert of bike geometry versus human anatomy, so my choice was based on
-argumentation logic lie "the biggest is the fastest" (mostly because of my
+argumentation logic like "the biggest is the fastest" (mostly because of my
 height, which is 193 centimeters). Hence I chose the XL size (the biggest
 available). The exact numbers can be found in the [Scalpel HT owners
 manual][owners-manual].
