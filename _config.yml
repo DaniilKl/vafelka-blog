@@ -1,7 +1,7 @@
 # Site settings
 title:          Vafelka blog
 description:    "A blog"
-baseurl:        ""
+baseurl:        "/vafelka-blog"
 url:            "https://daniilkl.github.io/vafelka-blog/"
 
 # Google Analytics
