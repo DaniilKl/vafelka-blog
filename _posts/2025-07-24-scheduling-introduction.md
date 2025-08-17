@@ -16,11 +16,21 @@ there like, for example, FreeRTOS and QEMU.
 
 <!--more-->
 
-TODO
+## Why the scheduler?
 
-## TODO
 
-TODO
+
+### What is the scheduler?
+
+### Real time?
+
+### Why RTOS'es?
+
+## Software architectures or where the scheduler lives?
+
+## Scheduling technics
+
+## Scheduler's anatomy
 
 ## Summing up
 
