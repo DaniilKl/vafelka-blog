@@ -18,13 +18,90 @@ there like, for example, FreeRTOS and QEMU.
 
 ## Why the scheduler?
 
+As a workaholic that has a lot of hobbies I am interested in efficient time
+organization. I have spent some time digging in the topic, but then noticed one
+thing: how on the Earth such great amount of applications are responsive to the
+user at the same time on the PC?! I did already have at the time some knowledge
+about the computers and software. But yet the question raised my curiosity.
 
+So happenned that at the time I was interested in programming as well. And more
+precisely in low level programming (somewhere around simple drivers and
+bare-metal applications). And I like to feel like a hacker sometimes :) .
 
 ### What is the scheduler?
 
+The scheduler is like a traffic flagman on intersection, where the cars are your
+applications you are running on your personal computer, smartphone or any
+interractive piece of electronics. Depending on some canditions some cars will
+be moving hence reaching their final destination, while other will be waiting.
+
+There is a large number of specific schedulers that are designed for specific
+systems (the interractive systems are the most popular example). But I will
+focuse on the schedulers that serve a specific operating systems called Real
+Time Operating Systems (aka. RTOS).
+
 ### Real time?
 
+I thing the definition should be explained briefly before continuing. Here are
+some of the difinitions found on the internet:
+
+From [the wikipedia.org][rtos-wiki]:
+
+> Real-time computing (RTC) is the computer science term for hardware and
+> software systems subject to a "real-time constraint", for example from event
+> to system response. Real-time programs must guarantee response within
+> specified time constraints, often referred to as "deadlines".
+
+From [24765-2017 - ISO/IEC/IEEE][iso-24765-2017]:
+
+> 3.3327<br>
+> real-time
+> 1. problem, system, or application that is concurrent and has timing
+> constraints whereby incoming events must be processed within a given timeframe
+> 2. pertaining to a system or mode of operation in which computation is
+> performed during the actual time that an external process occurs, in order
+> that the computation results can be used to control, monitor, or respond in a
+> timely manner to the external process
+
+From [TCRTS (aka. Technical Community on Real-Time Systems)][tcrts-real-time]:
+
+> **Real-Time System**: is a computing system whose correct behavior depends not
+> only on the value of the computation but also on the time at which outputs are
+> produced.
+
+These are just a few definitions that can be found on the internet, but I think
+they explain the main point precise enough: the focuse in real time applications
+is on time, and more precisely on the **time determinism**. What does the "time
+determinism" mean? Well, shortly it means that every event appearance in time
+can be computed and/or controlled.
+
+Hence, by projecting the definition of real time systems on the operating
+systems we get the real time operating systems also known as RTOSes. That is,
+these are the operating systems where, among other important features, the time
+determinism is **the most important**. This breaks the common misconception
+about RTOSes: RTOSes do not focuse on **how fast** you will get the result, they
+focuse on **when** you get the result.
+
+[rtos-wiki]: https://en.wikipedia.org/wiki/Real-time_computing
+[iso-24765-2017]: https://ieeexplore.ieee.org/document/8016712
+[tcrts-real-time]: https://cmte.ieee.org/tcrts/education/terminology-and-notation/
+
 ### Why RTOS'es?
+
+There is a great variety of operating systems out there. Why RTOSes then? The
+operating systems is a complex topic. Most of the time it is large codedbase,
+several layers of abstractions, large amount of APIs. And all of this varies by
+the architecture every operating system is built to run on and specific software
+implementation.
+
+Hence I wanted to skip all these huge general purpose operating systems and
+all the edge case implementations. And the RTOSes are very populare and mostly
+build according to microkernel architecture principles. That means they are
+small, simple and most of the time have only the core components implemented,
+including the scheduler. Moreover, most of the time, the scheduler is the main
+focuse in RTOS'es.
+
+So, the RTOS'es are just a shortcut to experiments with the scheduler.
 
 ## Software architectures or where the scheduler lives?
 
