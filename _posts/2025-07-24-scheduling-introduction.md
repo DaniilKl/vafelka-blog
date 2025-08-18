@@ -30,6 +30,9 @@ bare-metal applications). And I like to feel like a hacker sometimes :) .
 
 ### What is the scheduler?
 
+![flagman]({{ site.baseurl }}/assets/images/2025-07-24-scheduling-introduction/flagman.png)
+_Quickly created_
+
 The scheduler is like a traffic flagman on intersection, where the cars are your
 applications you are running on your personal computer, smartphone or any
 interractive piece of electronics. Depending on some canditions some cars will
