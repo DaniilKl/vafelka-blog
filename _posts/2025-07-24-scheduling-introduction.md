@@ -109,7 +109,8 @@ So, the RTOS'es are just a shortcut to experiments with the scheduler.
 ## Where the scheduler lives?
 
 ![cpu-resources-multiplexing]({{ site.baseurl }}/assets/images/2025-07-24-scheduling-introduction/cpu-resources-multiplexing.svg)
-_An architecture diagram. P.S. I do not know how ARM Exception Levels got here._
+_An architecture diagram. P.S. I do not know how the ARM Exception Levels got
+here._
 
 The above image is yet another TODO of the software architecture diagrams. But
 with one difference: I put some arrows that outline how CPU resources are being
@@ -137,6 +138,116 @@ laboratory environment, so the architecture becomes much simpler:
 _Yet another architecture diagram._
 
 ### Quick guide into FreeRTOS
+
+FreeRTOS is a micrekernel designed for real-time application on MCUs. To run
+several tasks semultenuously on one core you need:
+
+1. Add the starting point:
+
+    ```c
+    int main(void){
+
+        while (1){}
+    }
+    ```
+
+2. Add the tasks:
+
+    ```c
+    void Task1(void *pvParameters);
+    void Task2(void *pvParameters);
+
+    int main(void){
+        while (1){}
+    }
+
+    void Task1 (void *pvParameters){
+
+        while (1){
+            vTaskDelay(pdMS_TO_TICKS( 500 ));
+        }
+        vTaskDelete(NULL);
+    }
+
+    void Task2 (void *pvParameters){
+
+        while (1){
+            vTaskDelay(pdMS_TO_TICKS( 1000 ));
+        }
+        vTaskDelete(NULL);
+    }
+    ```
+
+3. Register the tasks:
+
+    ```c
+    void Task1(void *pvParameters);
+    void Task2(void *pvParameters);
+
+    int main(void){
+        xTaskCreate(Task1, "Task1", TASK_STACK_LENGHT_WORDS, NULL, 1, NULL);
+        xTaskCreate(Task2, "Task2", TASK_STACK_LENGHT_WORDS, NULL, 0, NULL);
+
+        while (1){}
+    }
+
+    void Task1 (void *pvParameters){
+
+        while (1){
+            vTaskDelay(pdMS_TO_TICKS( 500 ));
+        }
+        vTaskDelete(NULL);
+    }
+
+    void Task2 (void *pvParameters){
+
+        while (1){
+            vTaskDelay(pdMS_TO_TICKS( 1000 ));
+        }
+        vTaskDelete(NULL);
+    }
+    ```
+
+4. Start the sceduler:
+
+    ```c
+    void Task1(void *pvParameters);
+    void Task2(void *pvParameters);
+
+    int main(void){
+        xTaskCreate(Task1, "Task1", TASK_STACK_LENGHT_WORDS, NULL, 1, NULL);
+        xTaskCreate(Task2, "Task2", TASK_STACK_LENGHT_WORDS, NULL, 0, NULL);
+
+        vTaskStartScheduler();
+
+        while (1){}
+    }
+
+    void Task1 (void *pvParameters){
+
+        while (1){
+            vTaskDelay(pdMS_TO_TICKS( 500 ));
+        }
+        vTaskDelete(NULL);
+    }
+
+    void Task2 (void *pvParameters){
+
+        while (1){
+            vTaskDelay(pdMS_TO_TICKS( 1000 ));
+        }
+        vTaskDelete(NULL);
+    }
+    ```
+
+5. Enjoy watching the tasks fight for the CPU time.
+
+For more technical information reffer to the:
+* [FreeRTOS documentation][freertos-docs].
+* [FreeRTOS book][freertos-book].
+
+[freertos-docs]: https://www.freertos.org/Documentation/02-Kernel/07-Books-and-manual/01-RTOS_book#freertos-reference-manual
+[freertos-book]: https://www.freertos.org/Documentation/02-Kernel/07-Books-and-manual/01-RTOS_book#mastering-the-freertos-real-time-kernel---a-hands-on-tutorial-guide
 
 ### Launching the minimal build on QEMU
 
