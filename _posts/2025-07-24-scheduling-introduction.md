@@ -31,7 +31,7 @@ bare-metal applications). And I like to feel like a hacker sometimes :) .
 ### What is the scheduler?
 
 ![flagman]({{ site.baseurl }}/assets/images/2025-07-24-scheduling-introduction/flagman.png)
-_Quickly created_
+_Quickly created._
 
 The scheduler is like a traffic flagman on intersection, where the cars are your
 applications you are running on your personal computer, smartphone or any
@@ -98,7 +98,7 @@ the architecture every operating system is built to run on and specific software
 implementation.
 
 Hence I wanted to skip all these huge general purpose operating systems and
-all the edge case implementations. And the RTOSes are very populare and mostly
+all the edge case implementations. And the RTOSes are very popular and mostly
 build according to microkernel architecture principles. That means they are
 small, simple and most of the time have only the core components implemented,
 including the scheduler. Moreover, most of the time, the scheduler is the main
@@ -106,11 +106,47 @@ focuse in RTOS'es.
 
 So, the RTOS'es are just a shortcut to experiments with the scheduler.
 
-## Software architectures or where the scheduler lives?
+## Where the scheduler lives?
+
+![cpu-resources-multiplexing]({{ site.baseurl }}/assets/images/2025-07-24-scheduling-introduction/cpu-resources-multiplexing.svg)
+_An architecture diagram. P.S. I do not know how ARM Exception Levels got here._
+
+The above image is yet another TODO of the software architecture diagrams. But
+with one difference: I put some arrows that outline how CPU resources are being
+assigned in this software hierarhy:
+
+1. The hypervisors are responsible for separating virtual machines environments,
+  including its execution context. Hence, hypervisors typically have a separate
+  chunk of code that contains either a static assignemnt of the CPU resources or
+  a scheduler.
+2. Hypervisors often are used to run several operating systems in a separated
+  environments.
+3. Sometimes hypervisors are used to launch bare-metal applications as well.
+4. When an operating system is being launched on top of a hypervisor we have
+  another layer, where the CPU resources are shared - the scheduler in the
+  operating systems.
+
+There are other architectures with more complex CPU resources sharing (e.g. the
+nested virtualization), but I did not want to overcomplicate the intrudoction.
+Going further - I want to drop the hypervisor from this post as well, as I have
+not touched the nested scheduling yet. In fact, the RTOS'es archiotectures allow
+to drop all drivers and services as well, and study the sccheduling in a
+laboratory environment, so the architecture becomes much simpler:
+
+![cpu-resources-multiplexing-minimal]({{ site.baseurl }}/assets/images/2025-07-24-scheduling-introduction/cpu-resources-multiplexing-minimal.svg)
+_Yet another architecture diagram._
+
+### Quick guide into FreeRTOS
+
+### Launching the minimal build on QEMU
 
 ## Scheduling technics
 
+### Scheduling in FreeRTOS
+
 ## Scheduler's anatomy
+
+### FreeRTOS scheduler implementation
 
 ## Summing up
 
