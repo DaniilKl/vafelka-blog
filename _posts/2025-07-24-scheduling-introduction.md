@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "Scheduling unschedulable, OSes, supervisors and hypervisors"
+title: "Scheduling unschedulable, FreeRTOS scheduler"
 author: "Daniil"
 tags: programming engineering operating_systems
 excerpt_separator: <!--more-->
@@ -10,29 +10,16 @@ Hello there! Some time ago I was chasing Bachelor's degree in the Gdańsk
 University of Technology. And as a thesis I choose my own topic: "Methods for
 implementing control algorithms using embedded systems.". Sounds vague, isn't
 it? But this was my first dive into low level programming, and I want to share
-some of my thoughts and findings. Though the topic is a bit complicated, I will
-try to be as simple as possible and use some of the existing technologies out
-there like, for example, FreeRTOS and QEMU.
+some of my thoughts and findings.
 
 <!--more-->
-
-## Why the scheduler?
-
-As a workaholic that has a lot of hobbies I am interested in efficient time
-organization. I have spent some time digging in the topic, but then noticed one
-thing: how on the Earth such great amount of applications are responsive to the
-user at the same time on the PC?! I did already have at the time some knowledge
-about the computers and software. But yet the question raised my curiosity.
-
-So happenned that at the time I was interested in programming as well. And more
-precisely in low level programming (somewhere around simple drivers and
-bare-metal applications). And I like to feel like a hacker sometimes :) .
 
 ### What is the scheduler?
 
 ![flagman]({{ site.baseurl }}/assets/images/2025-07-24-scheduling-introduction/flagman.png)
 _Quickly created._
 
+The main guest in this post will be **the scheduler** of an operating system.
 The scheduler is like a traffic flagman on intersection, where the cars are your
 applications you are running on your personal computer, smartphone or any
 interractive piece of electronics. Depending on some canditions some cars will
@@ -45,7 +32,7 @@ Time Operating Systems (aka. RTOS).
 
 ### Real time?
 
-I thing the definition should be explained briefly before continuing. Here are
+I think the definition should be explained briefly before continuing. Here are
 some of the difinitions found on the internet:
 
 From [the wikipedia.org][rtos-wiki]:
@@ -75,10 +62,10 @@ From [TCRTS (aka. Technical Community on Real-Time Systems)][tcrts-real-time]:
 These are just a few definitions that can be found on the internet, but I think
 they explain the main point precise enough: the focuse in real time applications
 is on time, and more precisely on the **time determinism**. What does the "time
-determinism" mean? Well, shortly it means that every event appearance in time
-can be computed and/or controlled.
+determinism" mean? Well, shortly it means that every event arrival in time can
+be computed and/or controlled, hence determined.
 
-Hence, by projecting the definition of real time systems on the operating
+Therefore, by projecting the definition of real time systems on the operating
 systems we get the real time operating systems also known as RTOSes. That is,
 these are the operating systems where, among other important features, the time
 determinism is **the most important**. This breaks the common misconception
@@ -92,10 +79,10 @@ focuse on **when** you get the result.
 ### Why RTOS'es?
 
 There is a great variety of operating systems out there. Why RTOSes then? The
-operating systems is a complex topic. Most of the time it is large codedbase,
-several layers of abstractions, large amount of APIs. And all of this varies by
-the architecture every operating system is built to run on and specific software
-implementation.
+operating system is a complex topic. Most of the time it has a large codedbase,
+several layers of abstractions, large amount of APIs, etc.. And all of this
+varies by the hardware architecture every operating system is built to run on
+and specific software implementation.
 
 Hence I wanted to skip all these huge general purpose operating systems and
 all the edge case implementations. And the RTOSes are very popular and mostly
@@ -131,7 +118,7 @@ There are other architectures with more complex CPU resources sharing (e.g. the
 nested virtualization), but I did not want to overcomplicate the intrudoction.
 Going further - I want to drop the hypervisor from this post as well, as I have
 not touched the nested scheduling yet. In fact, the RTOS'es archiotectures allow
-to drop all drivers and services as well, and study the sccheduling in a
+to drop all drivers and services as well, and study the scheduling in a
 laboratory environment, so the architecture becomes much simpler:
 
 ![cpu-resources-multiplexing-minimal]({{ site.baseurl }}/assets/images/2025-07-24-scheduling-introduction/cpu-resources-multiplexing-minimal.svg)
