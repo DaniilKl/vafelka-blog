@@ -236,7 +236,129 @@ For more technical information reffer to the:
 [freertos-docs]: https://www.freertos.org/Documentation/02-Kernel/07-Books-and-manual/01-RTOS_book#freertos-reference-manual
 [freertos-book]: https://www.freertos.org/Documentation/02-Kernel/07-Books-and-manual/01-RTOS_book#mastering-the-freertos-real-time-kernel---a-hands-on-tutorial-guide
 
-### Launching the minimal build on QEMU
+### Launching a minimal build on QEMU
+
+> Note: This chapter contains some scary traces. If you do not understand smth.
+> \- please reffer to QEMU documentation and man pages and search for `-d exec`.
+> For me the fact that this debug option gives you the information about
+> executed C functions is enogh.
+
+You can launch a minimal demo from my graduate work repository by following the
+following steps:
+
+1. Download the pre-compiled ELF:
+
+    ```bash
+    wget https://github.com/DaniilKl/GraduateWork/raw/refs/heads/main/Code/LM3S6965_GCC_QEMU/FreeRTOS_QEMU.elf
+    ```
+
+2. Launch the QEMU:
+
+    ```bash
+    timeout 5s qemu-system-arm -kernel ./FreeRTOS_QEMU.elf -s -machine lm3s6965evb -nographic -d exec -D qemu.log < /dev/null &
+    ```
+
+    > Note: I used `QEMU emulator version 6.2.0
+    > (Debian 1:6.2+dfsg-2ubuntu6.26)`. The `timeout 5s` is needed because
+    > otherwise the QEMU call will flood the `qemu.log` file with traces.
+
+After that you will have the `qemu.log` file with the following types of
+content:
+
+* Some system tasks (note, that I will hide some parts of the traces for
+  convenience in the following code blocks):
+
+    ```text
+    (...)
+    Trace 0: 0x7aadb800dd80 [00800400/0000129a/00000110/ff000000] prvInitialiseTaskLists
+    Trace 0: 0x7aadb800d600 [00800400/00001458/00000110/ff000000] vListInitialise
+    (...)
+    Trace 0: 0x7aadb8010480 [00800400/0000017e/00000110/ff000000] xTaskCreate
+    Trace 0: 0x7aadb8010700 [00800400/00001b86/00000110/ff000000] main
+    Trace 0: 0x7aadb8001d40 [00800400/000000f0/00000110/ff000000] xTaskCreate
+    Trace 0: 0x7aadb8002100 [00800400/000015b8/00000110/ff000000] pvPortMalloc
+    Trace 0: 0x7aadb8002540 [00800400/0000070c/00000110/ff000000] vTaskSuspendAll
+    Trace 0: 0x7aadb80028c0 [00800400/000015f0/00000110/ff000000] pvPortMalloc
+    Trace 0: 0x7aadb80037c0 [00800400/00000728/00000110/ff000000] xTaskResumeAll
+    Trace 0: 0x7aadb8003c80 [00800400/000018cc/00000110/ff000000] vPortEnterCritical
+    (...)
+    ```
+
+* Some scheduler-related tasks:
+
+    ```text
+    (...)
+    Trace 0: SysTick_Handler
+    Trace 0: SysTick_Handler
+    Trace 0: xTaskIncrementTick
+    Trace 0: xTaskIncrementTick
+    Trace 0: SysTick_Handler
+    Trace 0: SysTick_Handler
+    Trace 0: vPortEnterCritical
+    Trace 0: vPortEnterCritical
+    Trace 0: xTaskResumeAll
+    Trace 0: xTaskResumeAll
+    Trace 0: xTaskIncrementTick
+    Trace 0: xTaskResumeAll
+    Trace 0: vPortExitCritical
+    Trace 0: vPortExitCritical
+    Trace 0: xTaskResumeAll
+    Trace 0: vTaskDelay
+    Trace 0: PendSV_Handler
+    Trace 0: PendSV_Handler
+    Trace 0: vTaskSwitchContext
+    (...)
+    ```
+
+* The `Task1` and `Task2` we created before!
+
+    ```text
+    (...)
+    Trace 0: Task1
+    Trace 0: vTaskDelay
+    (...)
+    Trace 0: PendSV_Handler
+    Trace 0: Task2
+    Trace 0: vTaskDelay
+    (...)
+    Trace 0: SysTick_Handler
+    Trace 0: vTaskDelay
+    Trace 0: Task1
+    (...)
+    ```
+
+Actually if we take a closer look on the traces, we can find the momments, when
+scheduler switches between `Task1` and `Task2` (I have deleted some parts of the
+traces for convenience):
+
+```text
+Trace 0: Task1 <- Task1 is being executed
+Trace 0: vTaskDelay <- Task1 enters its delay function
+Trace 0: vTaskDelay
+Trace 0: prvAddCurrentTaskToDelayedList
+Trace 0: uxListRemove
+Trace 0: prvAddCurrentTaskToDelayedList <- Task1 is being delayed
+Trace 0: prvAddCurrentTaskToDelayedList
+Trace 0: prvAddCurrentTaskToDelayedList
+Trace 0: vTaskDelay
+Trace 0: vPortEnterCritical
+Trace 0: vPortEnterCritical
+Trace 0: xTaskResumeAll
+Trace 0: xTaskResumeAll
+Trace 0: vPortExitCritical
+Trace 0: vPortExitCritical
+Trace 0: xTaskResumeAll
+Trace 0: vTaskDelay
+Trace 0: PendSV_Handler
+Trace 0: PendSV_Handler
+Trace 0: vTaskSwitchContext <- Scheduler switches between Task1 and Task2
+Trace 0: PendSV_Handler
+Trace 0: PendSV_Handler
+Trace 0: PendSV_Handler
+Trace 0: Task2 <- Task2 is being executed
+```
+
+I will do some enquiry on what is going on during such a switch later.
 
 ## Scheduling technics
 
