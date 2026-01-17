@@ -362,7 +362,22 @@ I will do some enquiry on what is going on during such a switch later.
 
 ## Scheduler's anatomy
 
-## FreeRTOS scheduler
+For the sake of the next chapter to be undertood in the easiest possible way I
+need to get back to the theory for a moment.
+
+![scheduler-anathomy]({{site.baseurl}}/assets/images/2025-07-24-scheduling-introduction/context-switching.png)
+_Created while waiting for update to Fedora 43, I will reference this diagra as
+"diagram 1"_
+
+The image above presents **my understanding** of a OS code responsible for task
+switching. That is, not all code that is being executed during context switch
+should be called "scheduler". There are other pieces of code being executed that
+are responsible for other critical features in the OS: **the code that triggers
+the switch** (the green blocks on the diagram above), and the **dispatcher** (the
+yellow blocks on the diagram above). But lets find these pieces of code in
+FreeRTOS kernel.
+
+### FreeRTOS scheduler
 
 ## Summing up
 
