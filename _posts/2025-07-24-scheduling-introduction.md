@@ -360,13 +360,9 @@ Trace 0: Task2 <- Task2 is being executed
 
 I will do some enquiry on what is going on during such a switch later.
 
-## Scheduling technics
-
-### Scheduling in FreeRTOS
-
 ## Scheduler's anatomy
 
-### FreeRTOS scheduler implementation
+## FreeRTOS scheduler
 
 ## Summing up
 
