@@ -151,7 +151,7 @@ several tasks semultenuously on one core you need:
     void Task1 (void *pvParameters){
 
         while (1){
-            vTaskDelay(pdMS_TO_TICKS( 500 ));
+            vTaskDelay(pdMS_TO_TICKS( 1 ));
         }
         vTaskDelete(NULL);
     }
@@ -159,7 +159,7 @@ several tasks semultenuously on one core you need:
     void Task2 (void *pvParameters){
 
         while (1){
-            vTaskDelay(pdMS_TO_TICKS( 1000 ));
+            vTaskDelay(pdMS_TO_TICKS( 4 ));
         }
         vTaskDelete(NULL);
     }
