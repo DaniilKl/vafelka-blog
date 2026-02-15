@@ -249,8 +249,13 @@ following steps:
 1. Download the pre-compiled ELF:
 
     ```bash
-    wget https://github.com/DaniilKl/GraduateWork/raw/refs/heads/main/Code/LM3S6965_GCC_QEMU/FreeRTOS_QEMU.elf
+    wget https://github.com/DaniilKl/GraduateWork/raw/46e5e9ca415f71cd50629712d33d7f8538e86fde/Code/LM3S6965_GCC_QEMU/FreeRTOS_QEMU.elf
     ```
+
+    > Note: This ELF has been compiled from
+    > [here](https://github.com/DaniilKl/GraduateWork/tree/46e5e9ca415f71cd50629712d33d7f8538e86fde/Code/LM3S6965_GCC_QEMU)
+    > using a modified FreeRTOS kernel 202212.01 from
+    > [here.](https://github.com/DaniilKl/FreeRTOS/tree/ae4a4ffcb8ead71b5d3f868a1da514be54e35821)
 
 2. Launch the QEMU:
 
@@ -258,9 +263,9 @@ following steps:
     timeout 5s qemu-system-arm -kernel ./FreeRTOS_QEMU.elf -s -machine lm3s6965evb -nographic -d exec -D qemu.log < /dev/null &
     ```
 
-    > Note: I used `QEMU emulator version 6.2.0
-    > (Debian 1:6.2+dfsg-2ubuntu6.26)`. The `timeout 5s` is needed because
-    > otherwise the QEMU call will flood the `qemu.log` file with traces.
+    > Note: I used `QEMU emulator version 10.1.3 (qemu-10.1.3-1.fc43). The
+    > `timeout 5s` is needed because otherwise the QEMU call will flood the
+    > `qemu.log` file with traces.
 
 After that you will have the `qemu.log` file with the following types of
 content:
