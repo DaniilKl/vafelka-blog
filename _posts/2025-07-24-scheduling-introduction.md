@@ -382,9 +382,321 @@ the switch** (the green blocks on the diagram above), and the **dispatcher** (th
 yellow blocks on the diagram above). But lets find these pieces of code in
 FreeRTOS kernel.
 
-### FreeRTOS scheduler
+## FreeRTOS scheduler
+
+Now that we know a bit about the code responsible for task switching - we can
+try and find it in the FreeRTOS source code.
+
+<details><summary> A quick digression </summary>
+
+<br>
+
+{% markdown %}
+
+While preparing the part about FreeRTOS scheduler I got a problem: somehow,
+after I have switched to Fedora 43 I got problems with the image I built before
+the update. And here where the good-old debugging skills help solve the problem.
+
+In MCU world there is not a lot of logs like in Linux systems. Sometimes the
+board just seems dead, because the issue occurred at the very beginning of
+software execution. But in my case I had QEMU! Here what I got from QEMU with
+`-d exec`.
+
+{% highlight text %}
+Trace 0: xPortStartScheduler
+Trace 0: xPortStartScheduler
+Linking TBs 0x7fbeb0015f80 index 1 -> 0x7fbeb0016540
+Trace 0: xPortStartScheduler
+Linking TBs 0x7fbeb0016540 index 1 -> 0x7fbeb0016780
+Trace 0: xPortStartScheduler
+Trace 0: xPortStartScheduler
+Linking TBs 0x7fbeb00168c0 index 1 -> 0x7fbeb00169c0
+Trace 0: xPortStartScheduler
+Linking TBs 0x7fbeb00169c0 index 0 -> 0x7fbeb0016b40
+Trace 0: xPortStartScheduler
+Linking TBs 0x7fbeb0016b40 index 0 -> 0x7fbeb0016b40
+Trace 0: xPortStartScheduler
+{% endhighlight %}
+
+It was stuck somewhere inside `xPortStartScheduler`, at the most critical
+section of the FreeRTOS startup - scheduler start. And the QEMU with `-d
+in_asm` showed:
+
+{% highlight text %}
+----------------
+IN: xPortStartScheduler
+0x0000182c:  e7fe       b        #0x182c
+{% endhighlight %}
+
+So a branch to itself, huh? It was a high time for a big guns - GDB with [GDB
+dashboard](https://github.com/cyrus-and/gdb-dashboard). After a few minutes of
+debugging I landed in the `xPortStartScheduler` on the following line from the
+FreeRTOS file `task.c`:
+
+{% highlight text %}
+─── Source ─────────────────────────────────────────────────────────────────────────────────────────────
+ 404          {
+ 405              /* Check the FreeRTOS configuration that defines the number of
+ 406               * priority bits matches the number of priority bits actually queried
+ 407               * from the hardware. */
+ 408              configASSERT( ( portMAX_PRIGROUP_BITS - ulMaxPRIGROUPValue ) == configPRIO_BITS );
+ 409          }
+ 410          #endif
+ 411  
+ 412          /* Shift the priority group value back to its position within the AIRCR
+ 413           * register. */
+{% endhighlight %}
+
+After a few seconds I came to a conclusion that `configPRIO_BITS` has incorrect
+value assigned. As one can see the `cmp` on address `0x00001814` compres two
+values: the value of the `r3` which is the result of `portMAX_PRIGROUP_BITS -
+ulMaxPRIGROUPValue` and the `8` constant value which is the value assigned to
+`configPRIO_BITS`:
+
+{% highlight text %}
+─── Assembly ───────────────────────────────────────────────────────────────────────────────────────────
+ 0x00001808  xPortStartScheduler+82  cmp	r3, #128	@ 0x80
+ 0x0000180a  xPortStartScheduler+84  beq.n	0x17ec <xPortStartScheduler+54>
+ 0x0000180c  xPortStartScheduler+86  ldr	r3, [pc, #124]	@ (0x188c <xPortStartScheduler+214>)
+ 0x0000180e  xPortStartScheduler+88  ldr	r3, [r3, #0]
+ 0x00001810  xPortStartScheduler+90  rsb	r3, r3, #7
+ 0x00001814  xPortStartScheduler+94  cmp	r3, #8
+ 0x00001816  xPortStartScheduler+96  beq.n	0x182e <xPortStartScheduler+120>
+ 0x00001818  xPortStartScheduler+98  mov.w	r3, #5
+ 0x0000181c  xPortStartScheduler+102 msr	BASEPRI, r3
+ 0x00001820  xPortStartScheduler+106 isb	sy
+─── Breakpoints ────────────────────────────────────────────────────────────────────────────────────────
+[1] break at 0x000017bc in /home/danik/Documents/Projects/GraduateWork/Code/FreeRTOS/FreeRTOS/Source/portable/GCC/ARM_CM3/port.c:364 for xPortStartScheduler hit 1 time
+─── Registers ──────────────────────────────────────────────────────────────────────────────────────────
+           r0 0x00000001           r1 0x00000002             r2 0x2000ff10           r3 0x00000003
+           r4 0x00000000           r5 0x00000000             r6 0x00000000           r7 0x2000ff70
+           r8 0x00000000           r9 0x00000000            r10 0x00000000          r11 0x00000000
+          r12 0x00000008           sp 0x2000ff70             lr 0x00000693           pc 0x00001814
+         xpsr 0x81000000          msp 0x2000ff70            psp 0x00000000      primask 0x00000000
+      control 0x00000000      basepri 0x00000005      faultmask 0x00000000
+─── Source ─────────────────────────────────────────────────────────────────────────────────────────────
+ 404          {
+ 405              /* Check the FreeRTOS configuration that defines the number of
+ 406               * priority bits matches the number of priority bits actually queried
+ 407               * from the hardware. */
+ 408              configASSERT( ( portMAX_PRIGROUP_BITS - ulMaxPRIGROUPValue ) == configPRIO_BITS );
+ 409          }
+ 410          #endif
+ 411  
+ 412          /* Shift the priority group value back to its position within the AIRCR
+ 413           * register. */
+{% endhighlight %}
+
+And in case the values do match the execution jumps to address `0x0000182e` and
+the scheduler is being initialized, otherwise it continues execution to
+`0x00001818` that is a part of the port-specific function `vPortRaiseBASEPRI`
+written in inline assembly that actually resulted in the "branch to itself"
+instruction `b #0x182c`.
+
+The solution was simple: assign value `3` to `configPRIO_BITS`. I am not sure
+how much time I would have spent without GDB.
+
+![gdb-good-boy]({{ site.baseurl }}/assets/images/2025-07-24-scheduling-introduction/gdb-good-boy.png)
+
+This was the time when I have had been guessing why it worked before.
+
+{% endmarkdown %}
+
+</details>
+
+<br>
+
+Back then, when I have been starting my thesis, I did not know about QEMU yet,
+so I had to compile the FreeRTOS on some real hardware (I had a STM Nucleo-64
+with STM32F401RE MCU in my disposition back then) and go through an entire
+FreeRTOS code up to running tasks to catch how the scheduler-related code and
+variables are being initialized and then used during runtime. It was pretty
+harsh warm up considering my close to zero knowledge about such systems. But now
+I have the stack of knowledge and needed infrastructure from the completed
+thesis and we can start from a lower entry level.
+
+I will explain the reason I used QEMU instead of real hardware in my thesis
+later, when I will approach the scheduler alghoritms analysis, so the problem
+will be more clear. For the impation one: read the part "5.1 Używana platforma"
+of [my thesis][thesis-pdf] for the reason of using QEMU, and the part "5.2.1
+Problemy i założenia" of [my thesis][thesis-pdf] for the consequences of using
+QEMU.
+
+### The system initialization
+
+Now I can get back to the `FreeRTOS_QEMU.elf` I have presented in [Launching
+a minimal build on QEMU](#launching-a-minimal-build-on-qemu) and inspect the
+`qemu.log` file generated there from the very beginning. Apart from other
+FreeRTOS functions lets focuse on the following functions:
+
+> Note: You can delete some useless information from the `qemu.log` by execution
+> `:%s/0: [0-9]x[0-9a-zA-Z \[\/]*]/0:` in Neovim. This will make analysis
+> easier.
+
+```text
+Trace 0: ResetISR
+(...)
+Trace 0: main
+Trace 0: xTaskCreate
+(...)
+Trace 0: prvInitialiseNewTask
+(...)
+Trace 0: vListInitialiseItem
+(...)
+Trace 0: prvAddNewTaskToReadyList
+(...)
+Trace 0: prvInitialiseTaskLists
+(...)
+Trace 0: main
+Trace 0: xTaskCreate
+(...)
+Trace 0: main
+Trace 0: vTaskStartScheduler
+Trace 0: xTaskCreate
+(...)
+Trace 0: xPortStartScheduler
+(...)
+Trace 0: vPortSetupTimerInterrupt
+(...)
+Trace 0: xPortStartScheduler
+Trace 0: prvPortStartFirstTask
+(...)
+Trace 0: SVC_Handler
+(...)
+Trace 0: Task2
+(...)
+```
+
+> Note: `(...)` means I have hidden some lines from `qemu.log` that are not
+> worth presenting, e.g. memory init. functions or other functions that are not
+> important from system point of view.
+
+Going from the first function to the last:
+
+* `ResetISR`: CPU [reset handler][reset-handler] located at adress 0 in [its. interrupt service
+  routine vector][reset-location] (at least for ARM Cortex-M3 on which the ELF
+  is built upon). This is the place from where we get into `main()` after CPU
+  reset.
+* The first `main`: The `main()` where the tasks are being registered and the
+  FreeRTOS scheduler is being started. An example can be found in the [previous
+  chapter](#launching-a-minimal-build-on-qemu).
+* The first `xTaskCreate`: [The place][xtaskcreate-location] where the `Task1`
+  is being initialized and registered to FreeRTOS. Apart from the actual `Task1`
+  staff (the `prvInitialiseNewTask`, `vListInitialiseItem` and the
+  `prvAddNewTaskToReadyList`) one additional function is being called: the
+  `prvInitialiseTaskLists` wich creates and initializes the task queue (the
+  `D3` from the `diagram 1`).
+* The second `main`: At this point the task queue has been created and the
+  `Task1` has been added to it.
+* The second `xTaskCreate`: The place where the `Task2` is being initialized and
+  registered to FreeRTOS (that is, being added to the task queue).
+* The third `main`: At this point the task queue contain two tasks: `Task1` and
+  `Task2`.
+* The `vTaskStartScheduler`: [The place][vtaskstartscheduler-location] where
+  scheduler is started, that does the following:
+  * Calls the `xTaskCreate` again to create an ["idle task"][idle-location] that
+    is being executed if there are no other tasks that are ready to be executed.
+    You can inspect the `qemu.log` for `prvIdleTask` - this is the actual "idle
+    task".
+  * Then goes inside the [MPU-specific routine][xportstartscheduler-location]
+    `xPortStartScheduler`, which does configuration and launches the SysTick
+    interrupt (the `vPortSetupTimerInterrupt`) and switching execution to the
+    first task in the task queue (the `S7` from the `diagram 1`; the
+    `prvPortStartFirstTask`).
+* The `SVC_Handler`: The `prvPortStartFirstTask` "yelds" to the low-level
+  dispatcher step `S7` from the `diagram 1` to load the state of the
+  to-be-executed task from the queue (for the classic FreeRTOS scheduler it is
+  the task with the higher priority during registration) - `Task2`.
+
+At this point the system has been initialized and running: the scheduler
+switches execution between tasks using classic FreeRTOS policy, and the tasks
+execute.
+
+The important note here is that every time the `prvAddNewTaskToReadyList()` and
+`prvInitialiseNewTask()` are being called the scheduler's code is being executed
+to determine, whether the newly-registered task should be executed next or
+should be placed in the task queue. Whether there is a need to execute scheduler
+code during task initialization actually depends on the scheduler policy being
+used. For example, lets use an analogy from medicine to explain this.
+
+You have probably met two strategies used for providing treatment to injured
+individuals in clinics:
+
+* First come, first served (aka. FCFS or FIFO): A new person comes and sees the
+  only queue with several peoples already waiting. The person knows the rules -
+  he should join as a last one in the queue.
+
+  ![fifo]({{site.baseurl}}/assets/images/2025-07-24-scheduling-introduction/fifo.png)
+
+* [Triage][triage] or priority queues: A new person comes and is being assigned
+  to a specific queue depending on the policy used by this clinic. Depending on
+  the priority assigned - the person will be treated sooner or later.
+
+  ![triage]({{site.baseurl}}/assets/images/2025-07-24-scheduling-introduction/triage.png)
+
+Here are some examples:
+
+* Priority assignment of a classic FreeRTOS scheduler:
+  [link][freertos-priority].
+* Priority recomputation for RM (aka. Rate Monotonic) scheduler I integrated
+  into FreeRTOS kernel: [link][rm-priority].
+* Priority assignment of a DARTS (aka. Dynamic Real Time Task Scheduling)
+  scheduler I integrated into FreeRTOS kernel: [link][darts-priority].
+
+As you can see, the way the task receives the priority during registration and
+the task queue implementation depends on the scheduler policy. Hence I will
+describe the implementation of these pieces of system code alongside the
+specific scheduler policies implementations.
+
+The `vPortSetupTimerInterrupt()` and the `prvPortStartFirstTask()` should be
+inpected closely, though. As the names of the function contain `Port` it means
+they are hardware-specific and can be found
+[here][vportsetuptimerinterrupt-location] and
+[here][prvportstartfirsttask-location].
+
+The `vPortSetupTimerInterrupt()` sets up
+the SysTick interrupt frequency using [configCPU_CLOCK_HZ][configCPU_CLOCK_HZ]
+and [configTICK_RATE_HZ][configTICK_RATE_HZ], you can read more about this in
+[FreeRTOS reference manual][freertos-reference-manual]. The SysTick is a
+[periodic interrupt][systick-handler] that periodically [triggers
+rescheduling][systick-trigger] (hence it is the trigger for the workflow from
+the `diagram 1`). There are other places that trigger FreeRTOS rescheduling in
+the FreeRTOS kernel source code. All of these places could be recognized by
+yelding the [PendSV handler][pendsv-location].
+
+The `prvPortStartFirstTask()` prepares the CPU for the state of the
+to-be-executed task and [yelds][prvportstartfirsttask-yeld] to the [PendSV
+handler][pendsv-location] to load the state of the to-be-executed task
+(according to `S7` from the `diagram 1`) and switches execution to it
+(according to `S8` from the `diagram 1`).
+
+[reset-handler]: https://github.com/DaniilKl/GraduateWork/blob/46e5e9ca415f71cd50629712d33d7f8538e86fde/Code/LM3S6965_GCC_QEMU/src/startup.c#L86
+[reset-location]: https://github.com/DaniilKl/GraduateWork/blob/46e5e9ca415f71cd50629712d33d7f8538e86fde/Code/LM3S6965_GCC_QEMU/src/startup.c#L21
+[xtaskcreate-location]: https://github.com/DaniilKl/FreeRTOS-Kernel/blob/5c09db63d6bc5af2f68a0a5a8ee91946dc8acc40/tasks.c#L1028
+[vtaskstartscheduler-location]: https://github.com/DaniilKl/FreeRTOS-Kernel/blob/5c09db63d6bc5af2f68a0a5a8ee91946dc8acc40/tasks.c#L2421
+[idle-location]: https://github.com/DaniilKl/FreeRTOS-Kernel/blob/5c09db63d6bc5af2f68a0a5a8ee91946dc8acc40/tasks.c#L4012
+[xportstartscheduler-location]: https://github.com/DaniilKl/FreeRTOS-Kernel/blob/5c09db63d6bc5af2f68a0a5a8ee91946dc8acc40/portable/GCC/ARM_CM3/port.c#L355
+[triage]: https://en.wikipedia.org/wiki/Triage
+[freertos-priority]: https://github.com/DaniilKl/FreeRTOS-Kernel/blob/5c09db63d6bc5af2f68a0a5a8ee91946dc8acc40/tasks.c#L1401
+[rm-priority]: https://github.com/DaniilKl/FreeRTOS-Kernel/blob/5c09db63d6bc5af2f68a0a5a8ee91946dc8acc40/tasks.c#L1270
+[darts-priority]: https://github.com/DaniilKl/FreeRTOS-Kernel/blob/5c09db63d6bc5af2f68a0a5a8ee91946dc8acc40/tasks.c#L1514
+[vportsetuptimerinterrupt-location]: https://github.com/DaniilKl/FreeRTOS-Kernel/blob/5c09db63d6bc5af2f68a0a5a8ee91946dc8acc40/portable/GCC/ARM_CM3/port.c#L775
+[prvportstartfirsttask-location]: https://github.com/DaniilKl/FreeRTOS-Kernel/blob/5c09db63d6bc5af2f68a0a5a8ee91946dc8acc40/portable/GCC/ARM_CM3/port.c#L334
+[configCPU_CLOCK_HZ]: https://github.com/DaniilKl/GraduateWork/blob/46e5e9ca415f71cd50629712d33d7f8538e86fde/Code/LM3S6965_GCC_QEMU/Include/FreeRTOSConfig.h#L60
+[configTICK_RATE_HZ]: https://github.com/DaniilKl/GraduateWork/blob/46e5e9ca415f71cd50629712d33d7f8538e86fde/Code/LM3S6965_GCC_QEMU/Include/FreeRTOSConfig.h#L61C9-L61C27
+[freertos-reference-manual]: https://www.freertos.org/media/2018/FreeRTOS_Reference_Manual_V10.0.0.pdf
+[systick-handler]: https://github.com/DaniilKl/FreeRTOS-Kernel/blob/5c09db63d6bc5af2f68a0a5a8ee91946dc8acc40/portable/GCC/ARM_CM3/port.c#L526
+[systick-trigger]: https://github.com/DaniilKl/FreeRTOS-Kernel/blob/5c09db63d6bc5af2f68a0a5a8ee91946dc8acc40/portable/GCC/ARM_CM3/port.c#L539
+[pendsv-location]: https://github.com/DaniilKl/FreeRTOS-Kernel/blob/5c09db63d6bc5af2f68a0a5a8ee91946dc8acc40/portable/GCC/ARM_CM3/port.c#L489
+[prvportstartfirsttask-yeld]: https://github.com/DaniilKl/FreeRTOS-Kernel/blob/5c09db63d6bc5af2f68a0a5a8ee91946dc8acc40/portable/GCC/ARM_CM3/port.c#L345
+
+### Switching between tasks
+
+
 
 ## Summing up
+
+[thesis-pdf]: https://github.com/DaniilKl/GraduateWork/blob/main/Docs/Thesis/PDFs/GraduateWork.pdf
 
 <center><em>TODO
 </em> TODO </center>
