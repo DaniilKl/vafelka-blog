@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "Japanese input methid configuration via ansible"
+title: "Japanese input method configuration via ansible"
 author: "Daniil"
 tags: japan language ansible gnome fedora
 excerpt_separator: <!--more-->
