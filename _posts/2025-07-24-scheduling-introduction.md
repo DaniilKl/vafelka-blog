@@ -692,7 +692,136 @@ handler][pendsv-location] to load the state of the to-be-executed task
 
 ### Switching between tasks
 
+For the analysis of the process of switching between tasks I will use logs from
+the chapter [Launching a minimal build on
+QEMU](#launching-a-minimal-build-on-qemu):
 
+```text
+Trace 0: Task1 <- Task1 is being executed
+Trace 0: vTaskDelay <- Task1 enters its delay function
+Trace 0: vTaskDelay
+Trace 0: prvAddCurrentTaskToDelayedList
+Trace 0: uxListRemove
+Trace 0: prvAddCurrentTaskToDelayedList <- Task1 is being delayed
+Trace 0: prvAddCurrentTaskToDelayedList
+Trace 0: prvAddCurrentTaskToDelayedList
+Trace 0: vTaskDelay
+Trace 0: vPortEnterCritical
+Trace 0: vPortEnterCritical
+Trace 0: xTaskResumeAll
+Trace 0: xTaskResumeAll
+Trace 0: vPortExitCritical
+Trace 0: vPortExitCritical
+Trace 0: xTaskResumeAll
+Trace 0: vTaskDelay
+Trace 0: PendSV_Handler
+Trace 0: PendSV_Handler
+Trace 0: vTaskSwitchContext <- Scheduler switches between Task1 and Task2
+Trace 0: PendSV_Handler
+Trace 0: PendSV_Handler
+Trace 0: PendSV_Handler
+Trace 0: Task2 <- Task2 is being executed
+```
+
+Remember I said `There are other places that trigger FreeRTOS rescheduling in
+the FreeRTOS kernel source code.` in [the previous
+chapter](#the-system-initialization). In the logs above you can see another
+places where the FreeRTOS kernel code yelds to the [PendSV
+handler][pendsv-location] and triggers rescheduling - the `vTaskDelay()`
+[here][vtaskdelay-yeld] or [here][vtaskdelay-yeld2]. So the `vTaskDelay()` is
+the `S1` from the `diagram 1`.
+
+The reason the `vTaskDelay()` must yeld for rescheduling is because when a
+certain task is delayed the CPU should execute some other task, it cannot
+execute nothing. So the `vTaskDelay()` yelds for scheduler to switch to the next
+task in the task queue (the `D3` from the `diagram 1`) or to the
+[prvIdleTask][idle-location].
+
+Then `vTaskDelay()` calls `prvAddCurrentTaskToDelayedList()` to do the `S3` and
+`S4` from the `diagram 1`. Then the `vTaskDelay()` yelds to the
+`PendSV_Handler()` which does the `S2` from the `diagram 1` and calls the
+`vTaskSwitchContext()` to do the `S5` from the `diagram 1`. The
+`vTaskSwitchContext()` executes [the scheduler][scheduler-location]. The
+scheduler selects the to-be-executed task using its policy (the step `S5` from
+the `diagram 1`) and assigns it to `pxCurrentTCB` (the step `S6` from the
+`diagram 1`) hence telling the `PendSV_Handler()` to load its state in the `S7`
+from the `diagram 1`, and switch execution to the task according to the `S8`
+from the `diagram 1`.
+
+This happens when one task is being delayed by some of the FreeRTOS'es delay
+functions (yeah, there are other delay functions in FreeRTOS apart from the
+`vTaskDelay()`).
+
+There is another case, when one task with higher priority (the `Task1`) preemts
+another task with lower priority (the `prvIdleTask`). Here is an example from
+the `qemu.log`:
+
+```text
+Trace 0: prvIdleTask
+Stopped execution of TB chain before 0x7f4644a27f40 [0000000000001278] prvIdleTask
+Trace 0: SysTick_Handler
+Trace 0: SysTick_Handler
+Trace 0: xTaskIncrementTick
+Linking TBs 0x7f4644a1c280 index 1 -> 0x7f4644a28180
+Trace 0: xTaskIncrementTick
+Linking TBs 0x7f4644a28180 index 0 -> 0x7f4644a28400
+Trace 0: xTaskIncrementTick
+Linking TBs 0x7f4644a28400 index 0 -> 0x7f4644a28900
+Trace 0: xTaskIncrementTick
+Linking TBs 0x7f4644a28900 index 0 -> 0x7f4644a29040
+Trace 0: xTaskIncrementTick
+Linking TBs 0x7f4644a29040 index 0 -> 0x7f4644a295c0
+Trace 0: xTaskIncrementTick
+Linking TBs 0x7f4644a295c0 index 1 -> 0x7f4644a298c0
+Trace 0: xTaskIncrementTick
+Linking TBs 0x7f4644a298c0 index 1 -> 0x7f4644a2aa40
+Trace 0: xTaskIncrementTick
+Linking TBs 0x7f4644a2aa40 index 0 -> 0x7f4644a28180
+Trace 0: xTaskIncrementTick
+Linking TBs 0x7f4644a28400 index 1 -> 0x7f4644a2ac00
+Trace 0: xTaskIncrementTick
+Linking TBs 0x7f4644a2ac00 index 0 -> 0x7f4644a1c540
+Trace 0: xTaskIncrementTick
+Trace 0: xTaskIncrementTick
+Trace 0: SysTick_Handler
+Linking TBs 0x7f4644a1cbc0 index 1 -> 0x7f4644a2ae40
+Trace 0: SysTick_Handler
+cpu_io_recompile: rewound execution of TB to 00000000000019f0
+Trace 0: SysTick_Handler
+Linking TBs 0x7f4644a2b180 index 1 -> 0x7f4644a1cd40
+Trace 0: SysTick_Handler
+Trace 0: SysTick_Handler
+Trace 0: PendSV_Handler
+Trace 0: PendSV_Handler
+Trace 0: vTaskSwitchContext
+Trace 0: PendSV_Handler
+Trace 0: PendSV_Handler
+Trace 0: PendSV_Handler
+Trace 0: SysTick_Handler
+Trace 0: SysTick_Handler
+Trace 0: xTaskIncrementTick
+Trace 0: xTaskIncrementTick
+Trace 0: SysTick_Handler
+Trace 0: SysTick_Handler
+Trace 0: vTaskDelay
+Linking TBs 0x7f4644a2b300 index 1 -> 0x7f4644a2b440
+Trace 0: vTaskDelay
+Stopped execution of TB chain before 0x7f4644a2b440 [0000000000000628] vTaskDelay
+Trace 0: SysTick_Handler
+Trace 0: SysTick_Handler
+Trace 0: xTaskIncrementTick
+Trace 0: xTaskIncrementTick
+Trace 0: SysTick_Handler
+Trace 0: SysTick_Handler
+Trace 0: vTaskDelay
+Trace 0: Task1
+```
+
+[pendsv-location]: https://github.com/DaniilKl/FreeRTOS-Kernel/blob/5c09db63d6bc5af2f68a0a5a8ee91946dc8acc40/portable/GCC/ARM_CM3/port.c#L489
+[vtaskdelay-yeld]: https://github.com/DaniilKl/FreeRTOS-Kernel/blob/5c09db63d6bc5af2f68a0a5a8ee91946dc8acc40/tasks.c#L1800
+[vtaskdelay-yeld2]: https://github.com/DaniilKl/FreeRTOS-Kernel/blob/5c09db63d6bc5af2f68a0a5a8ee91946dc8acc40/tasks.c#L1789
+[idle-location]: https://github.com/DaniilKl/FreeRTOS-Kernel/blob/5c09db63d6bc5af2f68a0a5a8ee91946dc8acc40/tasks.c#L4012
+[scheduler-location]: https://github.com/DaniilKl/FreeRTOS-Kernel/blob/5c09db63d6bc5af2f68a0a5a8ee91946dc8acc40/tasks.c#L3608
 
 ## Summing up
 
