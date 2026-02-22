@@ -6,34 +6,57 @@ tags: programming engineering operating_systems
 excerpt_separator: <!--more-->
 ---
 
-Hello there! Some time ago I was chasing Bachelor's degree in the Gdańsk
-University of Technology. And as a thesis I choose my own topic: "Methods for
-implementing control algorithms using embedded systems.". Sounds vague, isn't
-it? But this was my first dive into low level programming, and I want to share
-some of my thoughts and findings.
+Hello there! Some time ago I was pursuing a Bachelor’s degree in the Gdańsk
+University of Technology. And as a thesis I chose to focus on FreeRTOS kernel
+and its scheduler. Back then I was interested in complex systems designs
+including the operating systems schedulers implementations and testing. So
+happened that I knew the operating systems architectures only on paper and
+wanted to touch and examine them in real life. Thanks to the FreeRTOS simple
+design and good documentation I managed not only to learn how a real (the
+FreeRTOS’s one) scheduler work, but to swap the original scheduler in the
+FreeRTOS kernel with my own implementations of the well-known and not so
+algorithms, including: First Come First Served (aka. FCFS or FIFO), EDF (aka.
+Earliest Deadline First), Least Slack Time (or Least Laxity First; aka. LST or
+LLF), and many more!
 
 <!--more-->
+
+This post will cover only the introduction. Firstly I will explain to you the
+general concepts about scheduling in operating systems, and then we will take a
+look at how scheduling works in the FreeRTOS kernel. For the impatient ones and
+the ones who can read in the Polish language: check my thesis.
+
+Enjoy!
+
+[thesis]: https://github.com/DaniilKl/GraduateWork/blob/1c908a91df36edd75accd2fb028bbf3e2fbbb533/Docs/Thesis/PDFs/GraduateWork.pdf
 
 ### What is the scheduler?
 
 ![flagman]({{ site.baseurl }}/assets/images/2025-07-24-scheduling-introduction/flagman.png)
 _Quickly created._
 
-The main guest in this post will be **the scheduler** of an operating system.
-The scheduler is like a traffic flagman on intersection, where the cars are your
+The main guest in this post will be the scheduler of an operating system. The
+scheduler is like a traffic flagman on an intersection, where the cars are your
 applications you are running on your personal computer, smartphone or any
-interractive piece of electronics. Depending on some canditions some cars will
-be moving hence reaching their final destination, while other will be waiting.
+interactive piece of electronics. Depending on the flagman actions some cars are
+moving hence reaching their final destination, while others are waiting. The
+idea is to optimize the efficiency not of this specific intersection but to
+optimize traffic in the entire town to make sure everyone reaches their
+destination in the optimal time.
+
+The scheduler in operating systems serves a similar role - it manages the
+execution of applications or, in the smaller systems, tasks. So the result will
+be acquired in the most optimal time.
 
 There is a large number of specific schedulers that are designed for specific
-systems (the interractive systems are the most popular example). But I will
-focuse on the schedulers that serve a specific operating systems called Real
-Time Operating Systems (aka. RTOS).
+systems (the interactive systems are the most popular example). But I will focus
+on the schedulers that serve a specific operating system called Real Time
+Operating Systems (aka. RTOS).
 
 ### Real time?
 
 I think the definition should be explained briefly before continuing. Here are
-some of the difinitions found on the internet:
+some of the definitions found on the internet:
 
 From [the wikipedia.org][rtos-wiki]:
 
@@ -60,8 +83,8 @@ From [TCRTS (aka. Technical Community on Real-Time Systems)][tcrts-real-time]:
 > produced.
 
 These are just a few definitions that can be found on the internet, but I think
-they explain the main point precise enough: the focuse in real time applications
-is on time, and more precisely on the **time determinism**. What does the "time
+they explain the main point precisely enough: the focus in real time applications
+is on time, and more precisely on the **time determinism**. What does "time
 determinism" mean? Well, shortly it means that every event arrival in time can
 be computed and/or controlled, hence determined.
 
@@ -69,8 +92,8 @@ Therefore, by projecting the definition of real time systems on the operating
 systems we get the real time operating systems also known as RTOSes. That is,
 these are the operating systems where, among other important features, the time
 determinism is **the most important**. This breaks the common misconception
-about RTOSes: RTOSes do not focuse on **how fast** you will get the result, they
-focuse on **when** you get the result.
+about RTOSes: RTOSes do not focus on **how fast** you will get the result, they
+focus on **when** you get the result.
 
 [rtos-wiki]: https://en.wikipedia.org/wiki/Real-time_computing
 [iso-24765-2017]: https://ieeexplore.ieee.org/document/8016712
@@ -79,19 +102,20 @@ focuse on **when** you get the result.
 ### Why RTOS'es?
 
 There is a great variety of operating systems out there. Why RTOSes then? The
-operating system is a complex topic. Most of the time it has a large codedbase,
-several layers of abstractions, large amount of APIs, etc.. And all of this
+operating system is a complex topic. Most of the time it has a large codebase,
+several layers of abstractions, a large amount of APIs, etc.. And all of this
 varies by the hardware architecture every operating system is built to run on
 and specific software implementation.
 
-Hence I wanted to skip all these huge general purpose operating systems and
-all the edge case implementations. And the RTOSes are very popular and mostly
-build according to microkernel architecture principles. That means they are
-small, simple and most of the time have only the core components implemented,
-including the scheduler. Moreover, most of the time, the scheduler is the main
-focuse in RTOS'es.
+Hence, I wanted to skip all these huge general purpose operating systems and
+all the edge case implementations: to omit huge and undocumented stacks and
+make my experiments easier. And the RTOSes are very popular and mostly built
+according to microkernel architecture principles. That means they are small,
+simple and most of the time have only the core components implemented, including
+the scheduler. Moreover, most of the time, the scheduler is the main focus in
+RTOS'es.
 
-So, the RTOS'es are just a shortcut to experiments with the scheduler.
+So, the RTOSes are just a shortcut to experiments with the scheduler.
 
 ## Where the scheduler lives?
 
@@ -99,15 +123,15 @@ So, the RTOS'es are just a shortcut to experiments with the scheduler.
 _An architecture diagram. P.S. I do not know how the ARM Exception Levels got
 here._
 
-The above image is yet another TODO of the software architecture diagrams. But
-with one difference: I put some arrows that outline how CPU resources are being
-assigned in this software hierarhy:
+The above image is yet another classical software architecture diagram. But with
+one difference: I put some arrows that outline how CPU resources are being
+assigned in this software hierarchy:
 
 1. The hypervisors are responsible for separating virtual machines environments,
   including its execution context. Hence, hypervisors typically have a separate
-  chunk of code that contains either a static assignemnt of the CPU resources or
+  chunk of code that contains either a static assignment of the CPU resources or
   a scheduler.
-2. Hypervisors often are used to run several operating systems in a separated
+2. Hypervisors often are used to run several operating systems in separate
   environments.
 3. Sometimes hypervisors are used to launch bare-metal applications as well.
 4. When an operating system is being launched on top of a hypervisor we have
@@ -115,9 +139,9 @@ assigned in this software hierarhy:
   operating systems.
 
 There are other architectures with more complex CPU resources sharing (e.g. the
-nested virtualization), but I did not want to overcomplicate the intrudoction.
+nested virtualization), but I did not want to over complicate the introduction.
 Going further - I want to drop the hypervisor from this post as well, as I have
-not touched the nested scheduling yet. In fact, the RTOS'es archiotectures allow
+not touched the nested scheduling yet. In fact, the RTOS’es architectures allow
 to drop all drivers and services as well, and study the scheduling in a
 laboratory environment, so the architecture becomes much simpler:
 
@@ -126,8 +150,8 @@ _Yet another architecture diagram._
 
 ### Quick guide into FreeRTOS
 
-FreeRTOS is a micrekernel designed for real-time application on MCUs. To run
-several tasks semultenuously on one core you need:
+FreeRTOS is a microkernel designed for real-time application on MCUs. To run
+several tasks simultaneously on one core you need:
 
 1. Add the starting point:
 
@@ -195,7 +219,7 @@ several tasks semultenuously on one core you need:
     }
     ```
 
-4. Start the sceduler:
+4. Start the scheduler:
 
     ```c
     void Task1(void *pvParameters);
@@ -229,7 +253,7 @@ several tasks semultenuously on one core you need:
 
 5. Enjoy watching the tasks fight for the CPU time.
 
-For more technical information reffer to the:
+For more technical information refer to the:
 * [FreeRTOS documentation][freertos-docs].
 * [FreeRTOS book][freertos-book].
 
@@ -239,9 +263,9 @@ For more technical information reffer to the:
 ### Launching a minimal build on QEMU
 
 > Note: This chapter contains some scary traces. If you do not understand smth.
-> \- please reffer to QEMU documentation and man pages and search for `-d exec`.
+> \- please refer to QEMU documentation and man pages and search for `-d exec`.
 > For me the fact that this debug option gives you the information about
-> executed C functions is enogh.
+> executed C functions on the emulated architecture is enough.
 
 You can launch a minimal demo from my graduate work repository by following the
 following steps:
@@ -263,7 +287,7 @@ following steps:
     timeout 5s qemu-system-arm -kernel ./FreeRTOS_QEMU.elf -s -machine lm3s6965evb -nographic -d exec -D qemu.log < /dev/null &
     ```
 
-    > Note: I used `QEMU emulator version 10.1.3 (qemu-10.1.3-1.fc43). The
+    > Note: I used `QEMU emulator version 10.1.3 (qemu-10.1.3-1.fc43)`. The
     > `timeout 5s` is needed because otherwise the QEMU call will flood the
     > `qemu.log` file with traces.
 
@@ -332,7 +356,7 @@ content:
     (...)
     ```
 
-Actually if we take a closer look on the traces, we can find the momments, when
+Actually if we take a closer look on the traces, we can find the moments, when
 scheduler switches between `Task1` and `Task2` (I have deleted some parts of the
 traces for convenience):
 
@@ -363,24 +387,25 @@ Trace 0: PendSV_Handler
 Trace 0: Task2 <- Task2 is being executed
 ```
 
-I will do some enquiry on what is going on during such a switch later.
+I will do some enquiry on what is going on during such a switch later in this
+post.
 
 ## Scheduler's anatomy
 
-For the sake of the next chapter to be undertood in the easiest possible way I
+For the sake of the next chapter to be understood in the easiest possible way I
 need to get back to the theory for a moment.
 
 ![scheduler-anathomy]({{site.baseurl}}/assets/images/2025-07-24-scheduling-introduction/context-switching.png)
-_Created while waiting for update to Fedora 43, I will reference this diagra as
+_Created while waiting for update to Fedora 43, I will reference this diagram as
 "diagram 1"_
 
-The image above presents **my understanding** of a OS code responsible for task
-switching. That is, not all code that is being executed during context switch
+The image above presents **my understanding** of an OS code responsible for task
+switching. That is, not all code that is being executed during a context switch
 should be called "scheduler". There are other pieces of code being executed that
 are responsible for other critical features in the OS: **the code that triggers
-the switch** (the green blocks on the diagram above), and the **dispatcher** (the
-yellow blocks on the diagram above). But lets find these pieces of code in
-FreeRTOS kernel.
+the switch** (the green blocks on the diagram above), and the **dispatcher**
+(the yellow blocks on the diagram above). But let's find these pieces of code in
+the FreeRTOS kernel.
 
 ## FreeRTOS scheduler
 
@@ -397,9 +422,9 @@ While preparing the part about FreeRTOS scheduler I got a problem: somehow,
 after I have switched to Fedora 43 I got problems with the image I built before
 the update. And here where the good-old debugging skills help solve the problem.
 
-In MCU world there is not a lot of logs like in Linux systems. Sometimes the
-board just seems dead, because the issue occurred at the very beginning of
-software execution. But in my case I had QEMU! Here what I got from QEMU with
+In the MCU world there are not a lot of logs like in Linux systems. Sometimes
+the board just seems dead, because the issue occurred at the very beginning of
+software execution. But in my case I had QEMU! Here is what I got from QEMU with
 `-d exec`.
 
 {% highlight text %}
@@ -428,10 +453,11 @@ IN: xPortStartScheduler
 0x0000182c:  e7fe       b        #0x182c
 {% endhighlight %}
 
-So a branch to itself, huh? It was a high time for a big guns - GDB with [GDB
-dashboard](https://github.com/cyrus-and/gdb-dashboard). After a few minutes of
-debugging I landed in the `xPortStartScheduler` on the following line from the
-FreeRTOS file `task.c`:
+So a branch to itself, huh? It seems the execution was stuck on some check
+inside the FreeRTOS kernel. Hence, it was a high time for big guns - GDB with
+[GDB dashboard](https://github.com/cyrus-and/gdb-dashboard). After a few minutes
+of debugging I landed in the `xPortStartScheduler` on the following line from
+the FreeRTOS file `task.c`:
 
 {% highlight text %}
 ─── Source ─────────────────────────────────────────────────────────────────────────────────────────────
@@ -447,11 +473,11 @@ FreeRTOS file `task.c`:
  413           * register. */
 {% endhighlight %}
 
-After a few seconds I came to a conclusion that `configPRIO_BITS` has incorrect
-value assigned. As one can see the `cmp` on address `0x00001814` compres two
-values: the value of the `r3` which is the result of `portMAX_PRIGROUP_BITS -
-ulMaxPRIGROUPValue` and the `8` constant value which is the value assigned to
-`configPRIO_BITS`:
+After a few scratches on my head I came to a conclusion that `configPRIO_BITS`
+has an incorrect value assigned. As one can see the `cmp` on address
+`0x00001814` compares two values: the value of the `r3` which is the result of
+`portMAX_PRIGROUP_BITS - ulMaxPRIGROUPValue` and the `8` constant value which is
+the value assigned to `configPRIO_BITS`:
 
 {% highlight text %}
 ─── Assembly ───────────────────────────────────────────────────────────────────────────────────────────
@@ -488,7 +514,7 @@ ulMaxPRIGROUPValue` and the `8` constant value which is the value assigned to
 {% endhighlight %}
 
 And in case the values do match the execution jumps to address `0x0000182e` and
-the scheduler is being initialized, otherwise it continues execution to
+the scheduler is being initialized and started, otherwise it continues execution to
 `0x00001818` that is a part of the port-specific function `vPortRaiseBASEPRI`
 written in inline assembly that actually resulted in the "branch to itself"
 instruction `b #0x182c`.
@@ -498,26 +524,24 @@ how much time I would have spent without GDB.
 
 ![gdb-good-boy]({{ site.baseurl }}/assets/images/2025-07-24-scheduling-introduction/gdb-good-boy.png)
 
-This was the time when I have had been guessing why it worked before.
-
 {% endmarkdown %}
 
 </details>
 
 <br>
 
-Back then, when I have been starting my thesis, I did not know about QEMU yet,
-so I had to compile the FreeRTOS on some real hardware (I had a STM Nucleo-64
-with STM32F401RE MCU in my disposition back then) and go through an entire
-FreeRTOS code up to running tasks to catch how the scheduler-related code and
-variables are being initialized and then used during runtime. It was pretty
-harsh warm up considering my close to zero knowledge about such systems. But now
-I have the stack of knowledge and needed infrastructure from the completed
-thesis and we can start from a lower entry level.
+Back then, when Istarted my thesis, I did not know about QEMU, so I had to
+compile the FreeRTOS on some real hardware (I had a STM Nucleo-64 with
+STM32F401RE MCU in my disposition back then) and go through an entire FreeRTOS
+code up to running tasks to catch how the scheduler-related code and variables
+are being initialized and then used during runtime. It was a pretty harsh warm
+up considering my close to zero knowledge about such systems. But now I have the
+stack of knowledge and needed infrastructure from the completed thesis and we
+can start from a lower entry level.
 
 I will explain the reason I used QEMU instead of real hardware in my thesis
-later, when I will approach the scheduler alghoritms analysis, so the problem
-will be more clear. For the impation one: read the part "5.1 Używana platforma"
+later, when I will approach the scheduler algorithms analysis, so the problem
+will be more clear. For the impatient one: read the part "5.1 Używana platforma"
 of [my thesis][thesis-pdf] for the reason of using QEMU, and the part "5.2.1
 Problemy i założenia" of [my thesis][thesis-pdf] for the consequences of using
 QEMU.
