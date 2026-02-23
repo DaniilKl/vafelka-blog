@@ -551,7 +551,7 @@ QEMU.
 Now I can get back to the `FreeRTOS_QEMU.elf` I have presented in [Launching
 a minimal build on QEMU](#launching-a-minimal-build-on-qemu) and inspect the
 `qemu.log` file generated there from the very beginning. Apart from other
-FreeRTOS functions lets focuse on the following functions:
+FreeRTOS functions let's focus on the following functions:
 
 > Note: You can delete some useless information from the `qemu.log` by execution
 > `:%s/0: [0-9]x[0-9a-zA-Z \[\/]*]/0:` in Neovim. This will make analysis
@@ -593,11 +593,11 @@ Trace 0: Task2
 
 > Note: `(...)` means I have hidden some lines from `qemu.log` that are not
 > worth presenting, e.g. memory init. functions or other functions that are not
-> important from system point of view.
+> important from a system point of view.
 
 Going from the first function to the last:
 
-* `ResetISR`: CPU [reset handler][reset-handler] located at adress 0 in [its. interrupt service
+* `ResetISR`: CPU [reset handler][reset-handler] located at address 0 in [its interrupt service
   routine vector][reset-location] (at least for ARM Cortex-M3 on which the ELF
   is built upon). This is the place from where we get into `main()` after CPU
   reset.
@@ -606,15 +606,15 @@ Going from the first function to the last:
   chapter](#launching-a-minimal-build-on-qemu).
 * The first `xTaskCreate`: [The place][xtaskcreate-location] where the `Task1`
   is being initialized and registered to FreeRTOS. Apart from the actual `Task1`
-  staff (the `prvInitialiseNewTask`, `vListInitialiseItem` and the
+  stuff (the `prvInitialiseNewTask`, `vListInitialiseItem` and the
   `prvAddNewTaskToReadyList`) one additional function is being called: the
-  `prvInitialiseTaskLists` wich creates and initializes the task queue (the
+  `prvInitialiseTaskLists` which creates and initializes the task queue (the
   `D3` from the `diagram 1`).
-* The second `main`: At this point the task queue has been created and the
-  `Task1` has been added to it.
+* The second `main`: At this point the task queue has been created and `Task1`
+  has been added to it.
 * The second `xTaskCreate`: The place where the `Task2` is being initialized and
   registered to FreeRTOS (that is, being added to the task queue).
-* The third `main`: At this point the task queue contain two tasks: `Task1` and
+* The third `main`: At this point the task queue contains two tasks: `Task1` and
   `Task2`.
 * The `vTaskStartScheduler`: [The place][vtaskstartscheduler-location] where
   scheduler is started, that does the following:
@@ -632,23 +632,24 @@ Going from the first function to the last:
   to-be-executed task from the queue (for the classic FreeRTOS scheduler it is
   the task with the higher priority during registration) - `Task2`.
 
-At this point the system has been initialized and running: the scheduler
-switches execution between tasks using classic FreeRTOS policy, and the tasks
+At this point the system has been initialized and is running: the scheduler is
+switching execution between tasks using classic FreeRTOS policy, and the tasks
 execute.
 
 The important note here is that every time the `prvAddNewTaskToReadyList()` and
 `prvInitialiseNewTask()` are being called the scheduler's code is being executed
 to determine, whether the newly-registered task should be executed next or
-should be placed in the task queue. Whether there is a need to execute scheduler
-code during task initialization actually depends on the scheduler policy being
-used. For example, lets use an analogy from medicine to explain this.
+should be placed in the task queue. Whether there is actually a need to execute
+scheduler code during task initialization actually depends on the scheduler
+policy being used. For example, let's use an analogy from medicine to explain
+this.
 
 You have probably met two strategies used for providing treatment to injured
 individuals in clinics:
 
 * First come, first served (aka. FCFS or FIFO): A new person comes and sees the
-  only queue with several peoples already waiting. The person knows the rules -
-  he should join as a last one in the queue.
+  only queue with several people already waiting. The person knows the rules -
+  he should join as the last one in the queue.
 
   ![fifo]({{site.baseurl}}/assets/images/2025-07-24-scheduling-introduction/fifo.png)
 
@@ -673,7 +674,7 @@ describe the implementation of these pieces of system code alongside the
 specific scheduler policies implementations.
 
 The `vPortSetupTimerInterrupt()` and the `prvPortStartFirstTask()` should be
-inpected closely, though. As the names of the function contain `Port` it means
+inspected closely, though. As the names of the function contain `Port` it means
 they are hardware-specific and can be found
 [here][vportsetuptimerinterrupt-location] and
 [here][prvportstartfirsttask-location].
@@ -681,15 +682,15 @@ they are hardware-specific and can be found
 The `vPortSetupTimerInterrupt()` sets up
 the SysTick interrupt frequency using [configCPU_CLOCK_HZ][configCPU_CLOCK_HZ]
 and [configTICK_RATE_HZ][configTICK_RATE_HZ], you can read more about this in
-[FreeRTOS reference manual][freertos-reference-manual]. The SysTick is a
+[the FreeRTOS reference manual][freertos-reference-manual]. The SysTick is a
 [periodic interrupt][systick-handler] that periodically [triggers
 rescheduling][systick-trigger] (hence it is the trigger for the workflow from
 the `diagram 1`). There are other places that trigger FreeRTOS rescheduling in
 the FreeRTOS kernel source code. All of these places could be recognized by
-yelding the [PendSV handler][pendsv-location].
+yielding the [PendSV handler][pendsv-location].
 
 The `prvPortStartFirstTask()` prepares the CPU for the state of the
-to-be-executed task and [yelds][prvportstartfirsttask-yeld] to the [PendSV
+to-be-executed task and [yields][prvportstartfirsttask-yeld] to the [PendSV
 handler][pendsv-location] to load the state of the to-be-executed task
 (according to `S7` from the `diagram 1`) and switches execution to it
 (according to `S8` from the `diagram 1`).
@@ -731,22 +732,21 @@ Trace 0: Task2 <- Task2 is being executed
 
 Remember I said `There are other places that trigger FreeRTOS rescheduling in
 the FreeRTOS kernel source code.` in [the previous
-chapter](#the-system-initialization). In the logs above you can see another
-places where the FreeRTOS kernel code yelds to the [PendSV
-handler][pendsv-location] and triggers rescheduling - the `vTaskDelay()`
-[here][vtaskdelay-yeld] or [here][vtaskdelay-yeld2]. So the `vTaskDelay()` is
-the `S1` from the `diagram 1`.
+chapter](#the-system-initialization). In the logs above you can see other places
+where the FreeRTOS kernel code yelds to the [PendSV handler][pendsv-location]
+and triggers rescheduling - the `vTaskDelay()` [here][vtaskdelay-yeld] or
+[here][vtaskdelay-yeld2]. So the `vTaskDelay()` is the `S1` from `diagram 1`.
 
-The reason the `vTaskDelay()` must yeld for rescheduling is because when a
+The reason the `vTaskDelay()` must yield for rescheduling is because when a
 certain task is delayed the CPU should execute some other task, it cannot
-execute nothing. So the `vTaskDelay()` yelds for scheduler to switch to the next
-task in the task queue (the `D3` from the `diagram 1`) or to the
+execute nothing. So the `vTaskDelay()` yields for the scheduler to switch to the
+next task in the task queue (the `D3` from the `diagram 1`) or to the
 [prvIdleTask][idle-location].
 
 Then `vTaskDelay()` calls `prvAddCurrentTaskToDelayedList()` to do the `S3` and
-`S4` from the `diagram 1`. Then the `vTaskDelay()` yelds to the
-`PendSV_Handler()` which does the `S2` from the `diagram 1` and calls the
-`vTaskSwitchContext()` to do the `S5` from the `diagram 1`. The
+`S4` from the `diagram 1`. Then the `vTaskDelay()` yields to the
+`PendSV_Handler()` which does the `S2` from `diagram 1` and calls the
+`vTaskSwitchContext()` to do the `S5` from `diagram 1`. The
 `vTaskSwitchContext()` executes [the scheduler][scheduler-location]. The
 scheduler selects the to-be-executed task using its policy (the step `S5` from
 the `diagram 1`) and assigns it to `pxCurrentTCB` (the step `S6` from the
@@ -760,7 +760,7 @@ functions (yeah, there are other delay functions in FreeRTOS apart from the
 
 #### Task preemtion
 
-There is another case, when one task with higher priority (the `Task1`) preemts
+There is another case, when one task with higher priority (the `Task1`) preempts
 another task with lower priority (the `prvIdleTask`). Here is an example from
 the `qemu.log`:
 
@@ -788,16 +788,16 @@ Trace 0: Task1
 
 As you can see during execution of the `prvIdleTask` (the idle task in FreeRTOS
 always has the lowest priority compared to other tasks in the system) a
-periodic `SysTick` interrupt occures which calls the
+periodic `SysTick` interrupt occurs which calls the
 [xTaskIncrementTick][systick-incrementtick] which checks whether there are tasks
-that are ready to be executed (in this case the `Task1` that enetered a delay
+that are ready to be executed (in this case the `Task1` that entered a delay
 list a few SysTicks before is now finished waiting and is ready to be executed)
 and if there are - performs the `S3` and `S4` from the `diagram 1`, and then
-sygnals the `SysTick_Handler()` to yeld for a reschedulling. Then the process is
-the same as when the system yelds for reschedulling but insted of the
-`vTaskDelay()` the `SysTick_Handler()` yelds for reschedulling here. The
-`PendSV_Handler()` does the `S2` from the `diagram 1` and calls the
-`vTaskSwitchContext()` to do the `S5` from the `diagram 1`. The
+signals the `SysTick_Handler()` to yield for a rescheduling. Then the process is
+the same as when the system yields for rescheduling but instead of the
+`vTaskDelay()` the `SysTick_Handler()` yields for rescheduling here. The
+`PendSV_Handler()` does the `S2` from `diagram 1` and calls the
+`vTaskSwitchContext()` to do the `S5` from `diagram 1`. The
 `vTaskSwitchContext()` executes [the scheduler][scheduler-location]. The
 scheduler selects the to-be-executed task using its policy (the step `S5` from
 the `diagram 1`) and assigns it to `pxCurrentTCB` (the step `S6` from the
@@ -831,7 +831,37 @@ from the `diagram 1`.
 
 ## Summing up
 
+Now that I have revealed the places where the scheduler is hidden in FreeRTOS -
+I can continue with the scheduler policies I added to FreeRTOS kernel:
+
+* FCFS or First Come First Served: [the FreeRTOS Kernel commit][fcfs].
+* SJF or Shortest Job First: [the FreeRTOS Kernel commit][sjf].
+* SRTN or Shortest Remaning Time Next: [the FreeRTOS Kernel commit][srtn].
+* RR or Round Robin: [the FreeRTOS Kernel commit][rr].
+* RM and DM or Rate-Monotonic and Deadline-Monotonic: [the FreeRTOS Kernel
+  commit][rm-dm].
+* EDF or Earliest Deadline First: [the FreeRTOS Kernel commit][edf].
+* Preemptive EDF: [the FreeRTOS Kernel commit][preempt-edf].
+* LST (aka. LLF) or Least Slack Time (aka. Least Laxity First): [the FreeRTOS
+  Kernel commit][lst-llf].
+* Preemtive LST (aka. preemptive LLF): [the FreeRTOS Kernel
+  commit][preempt-llf].
+* DARTS or Dynamic Real Time Task Scheduling: [the FreeRTOS Kernel
+  commit][darts].
+
+I think I will create a small blogpost for every implementation.
+
 [thesis-pdf]: https://github.com/DaniilKl/GraduateWork/blob/main/Docs/Thesis/PDFs/GraduateWork.pdf
+[fcfs]: https://github.com/DaniilKl/FreeRTOS-Kernel/commit/9a481b1f867c17cb94d81a75e8dcf96d5c8a0e97
+[sjf]: https://github.com/DaniilKl/FreeRTOS-Kernel/commit/eb10cc3d5afe3e7b61d1fe2197540e4d86b22008
+[srtn]: https://github.com/DaniilKl/FreeRTOS-Kernel/commit/27d19b6c241412af0ef1d957373a4441538e4d62
+[rr]: https://github.com/DaniilKl/FreeRTOS-Kernel/commit/87fd91774db7f56d62d83164120218a9cbe11945
+[rm-dm]: https://github.com/DaniilKl/FreeRTOS-Kernel/commit/5c25c7d92a2dd86f1ff2273f6775ebe91b5e1863
+[edf]: https://github.com/DaniilKl/FreeRTOS-Kernel/commit/c475eb0264cfa7d74854743e5b47bd62f34eb5c4
+[preempt-edf]: https://github.com/DaniilKl/FreeRTOS-Kernel/commit/855279d3f91f3457ecf85871a25b38457e84828a
+[lst-llf]: https://github.com/DaniilKl/FreeRTOS-Kernel/commit/f1de548d1e64ac68eac5fb6ccd257e4862f41de8
+[preempt-llf]: https://github.com/DaniilKl/FreeRTOS-Kernel/commit/f1de548d1e64ac68eac5fb6ccd257e4862f41de8
+[darts]: https://github.com/DaniilKl/FreeRTOS-Kernel/commit/6ccbf1a53764421ceb9b166979a84b4690d7bea9
 
 <center><em>TODO
 </em> TODO </center>
