@@ -2,7 +2,7 @@
 layout: post
 title: "Scheduling unschedulable, FreeRTOS scheduler"
 author: "Daniil"
-tags: programming engineering operating_systems
+tags: programming engineering operating_systems FreeRTOS schedullers OS
 excerpt_separator: <!--more-->
 ---
 
