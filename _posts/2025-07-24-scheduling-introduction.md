@@ -863,5 +863,5 @@ I think I will create a small blogpost for every implementation.
 [preempt-llf]: https://github.com/DaniilKl/FreeRTOS-Kernel/commit/f1de548d1e64ac68eac5fb6ccd257e4862f41de8
 [darts]: https://github.com/DaniilKl/FreeRTOS-Kernel/commit/6ccbf1a53764421ceb9b166979a84b4690d7bea9
 
-<center><em>TODO
-</em> TODO </center>
+<center><em>I'd rather fight and regret it than not fight and regret it.</em>
+ Reinhard Von Lohengramm, Legend of The Galactic Heroes. </center>
