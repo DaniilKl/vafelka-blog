@@ -32,7 +32,7 @@ Enjoy!
 
 ### What is the scheduler?
 
-![flagman]({{ site.baseurl }}/assets/images/2025-07-24-scheduling-introduction/flagman.png)
+![flagman]({{ site.baseurl }}/assets/images/2026-02-24-scheduling-introduction/flagman.png)
 _Quickly created._
 
 The main guest in this post will be the scheduler of an operating system. The
@@ -119,7 +119,7 @@ So, the RTOSes are just a shortcut to experiments with the scheduler.
 
 ## Where the scheduler lives?
 
-![cpu-resources-multiplexing]({{ site.baseurl }}/assets/images/2025-07-24-scheduling-introduction/cpu-resources-multiplexing.svg)
+![cpu-resources-multiplexing]({{ site.baseurl }}/assets/images/2026-02-24-scheduling-introduction/cpu-resources-multiplexing.svg)
 _An architecture diagram. P.S. I do not know how the ARM Exception Levels got
 here._
 
@@ -145,7 +145,7 @@ not touched the nested scheduling yet. In fact, the RTOS’es architectures allo
 to drop all drivers and services as well, and study the scheduling in a
 laboratory environment, so the architecture becomes much simpler:
 
-![cpu-resources-multiplexing-minimal]({{ site.baseurl }}/assets/images/2025-07-24-scheduling-introduction/cpu-resources-multiplexing-minimal.svg)
+![cpu-resources-multiplexing-minimal]({{ site.baseurl }}/assets/images/2026-02-24-scheduling-introduction/cpu-resources-multiplexing-minimal.svg)
 _Yet another architecture diagram._
 
 ### Quick guide into FreeRTOS
@@ -395,7 +395,7 @@ post.
 For the sake of the next chapter to be understood in the easiest possible way I
 need to get back to the theory for a moment.
 
-![scheduler-anathomy]({{site.baseurl}}/assets/images/2025-07-24-scheduling-introduction/context-switching.png)
+![scheduler-anathomy]({{site.baseurl}}/assets/images/2026-02-24-scheduling-introduction/context-switching.png)
 _Created while waiting for update to Fedora 43, I will reference this diagram as
 "diagram 1"_
 
@@ -522,7 +522,7 @@ instruction `b #0x182c`.
 The solution was simple: assign value `3` to `configPRIO_BITS`. I am not sure
 how much time I would have spent without GDB.
 
-![gdb-good-boy]({{ site.baseurl }}/assets/images/2025-07-24-scheduling-introduction/gdb-good-boy.png)
+![gdb-good-boy]({{ site.baseurl }}/assets/images/2026-02-24-scheduling-introduction/gdb-good-boy.png)
 
 {% endmarkdown %}
 
@@ -651,13 +651,13 @@ individuals in clinics:
   only queue with several people already waiting. The person knows the rules -
   he should join as the last one in the queue.
 
-  ![fifo]({{site.baseurl}}/assets/images/2025-07-24-scheduling-introduction/fifo.png)
+  ![fifo]({{site.baseurl}}/assets/images/2026-02-24-scheduling-introduction/fifo.png)
 
 * [Triage][triage] or priority queues: A new person comes and is being assigned
   to a specific queue depending on the policy used by this clinic. Depending on
   the priority assigned - the person will be treated sooner or later.
 
-  ![triage]({{site.baseurl}}/assets/images/2025-07-24-scheduling-introduction/triage.png)
+  ![triage]({{site.baseurl}}/assets/images/2026-02-24-scheduling-introduction/triage.png)
 
 Here are some examples:
 
