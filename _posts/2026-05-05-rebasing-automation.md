@@ -15,12 +15,13 @@ with examples.
 # The general idea
 
 So, some time ago I was asked to figure out a rebase automation to reduce amount
-of outdated forks in company by continuesly rebasing it on top of the newest
-upstream. The idea was simple: add an automation that will try to rebase on top
-of the upstream **periodically** so the company will reduce one of the reasons
-of the outdated forks: **when the fork developers forget or do not have time**
-to even check whether the upstream has updates and whether rebasing on top of
-these updates will introduce any conflicts.
+of outdated forks and downstream branches in company by continuesly rebasing it
+on top of the newest upstream. The idea was simple: add an automation that will
+try to rebase on top of the upstream **periodically** (like once per week, or
+once per day in case of some really active upstream branches) so the company
+will reduce one of the reasons of the outdated forks: **when the fork developers
+forget or do not have time** to even check whether the upstream has updates and
+whether rebasing on top of these updates will introduce any conflicts.
 
 So, the automation should have the following inputs:
 
