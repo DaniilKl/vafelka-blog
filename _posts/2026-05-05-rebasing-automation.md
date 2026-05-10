@@ -48,22 +48,17 @@ _The general idea diagram_
 
 # The additional requirements
 
-I had the following additional requirements
+I had the following additional requirements:
 
-* Easy integration into CI&CD.
-* Possibility of local launch via CLI.
-* Easy containerisation.
-* A minimal list of generic dependencies.
+1. The solution **must not depend on CI&CD technologies** (e.g., GitHUB Actions,
+Woodpecker, etc.) so it will be possible to use it outside of the CI&CDs.
+2. The solution should not depend on tools and projects that have huge codebases,
+  or are unstable in terms of maintanance and license conditions.
 
-Let me break down the impact of these requirements.
-
-## Easy integration into CI&CD
-
-## Possibility of local launch via CLI
-
-## Easy containerisation
-
-## A minimal list of generic dependencies
+For more about these requirements I strongly reccomend you to read the
+[Stop rewriting your pipelines - achieving CI portability with Docker and
+Taskfile](https://blog.3mdeb.com/2026/2026-04-27-stop-rewriting-your-pipelines/)
+blog post posted by 3mdeb and Maciej Pijanowski.
 
 # The existing solutions
 
