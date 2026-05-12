@@ -15,7 +15,7 @@ with examples.
 # The general idea
 
 So, some time ago I was asked to figure out a rebase automation to reduce amount
-of outdated forks and downstream branches in company by continuesly rebasing it
+of outdated forks and downstream branches in company by continuously rebasing it
 on top of the newest upstream. The idea was simple: add an automation that will
 try to rebase on top of the upstream **periodically** (like once per week, or
 once per day in case of some really active upstream branches) so the company
@@ -25,7 +25,7 @@ whether rebasing on top of these updates will introduce any conflicts.
 
 So, the automation should have the following inputs:
 
-1. The the downstream repository (supposed but not required to be a fork of the
+1. The downstream repository (supposed but not required to be a fork of the
   upstream repository).
 2. The downstream branch in the downstream repository that should be rebased.
 3. The upstream repository.
@@ -50,12 +50,12 @@ _The general idea diagram_
 
 I had the following additional requirements:
 
-1. The solution **must not depend on CI&CD technologies** (e.g., GitHUB Actions,
+1. The solution **must not depend on CI&CD technologies** (e.g., GitHub Actions,
 Woodpecker, etc.) so it will be possible to use it outside of the CI&CDs.
-2. The solution should not depend on tools and projects that have huge codebases,
-  or are unstable in terms of maintanance and license conditions.
+2. The solution should not depend on tools and projects that have huge codebase,
+  or are unstable in terms of maintenance and license conditions.
 
-For more about these requirements I strongly reccomend you to read the
+For more about these requirements I strongly recomend you to read the
 [Stop rewriting your pipelines - achieving CI portability with Docker and
 Taskfile](https://blog.3mdeb.com/2026/2026-04-27-stop-rewriting-your-pipelines/)
 blog post posted by 3mdeb and Maciej Pijanowski.
@@ -73,7 +73,7 @@ Lets take a brief look on what I have found during my quick research.
   * The counterarguments are the same as for the `auto-rebase`.
 * [git_rebase_helper](https://github.com/andoriyaprashant/git_rebase_helper).
   * As it's name suggests - it is a tool that helps during rebase, that seems
-    more like extention to `git`.
+    more like extension to `git`.
   * The option `resolve` that is said to "Automatically resolve common rebase
     conflicts." might be interesting when I will be considering a tool for
     automated conflict resolution.
@@ -81,10 +81,10 @@ Lets take a brief look on what I have found during my quick research.
   * This tool is huge and is actually a separate version control system.
   * The rebase functionalities of that tool are interesting. But I have not
     found the needed functionalities. This seems to be a replacement for `git`,
-    and not a one-line call tool for the idea I persue.
+    and not a one-line call tool for the idea I pursue.
 * [rizzler](https://github.com/ghuntley/rizzler).
-  * As it's readme says, it is a tool for automated conflict resultion. This
-    might be interestinga later.
+  * As it's readme says, it is a tool for automated conflict resolution. This
+    might be interesting later.
 * [AutoMergeTools](https://github.com/xgouchet/AutoMergeTool).
   * The same as for the `rizzler`, but seems to not use AI to solve the
     conflicts.
@@ -111,8 +111,8 @@ Lets take a brief look on what I have found during my quick research.
 * [rebase-upstream-action](https://github.com/imba-tjd/rebase-upstream-action).
   * Yet another GitHub action.
 * [rbt](https://github.com/jacobsee/rbt).
-  * Not qiet what I need.
-  * The tool might be very usefull for complex projects and rebases beaceuse of
+  * Not quite what I need.
+  * The tool might be very useful for complex projects and rebases because of
     its upstream status visualisation and the comparison of the same commit but
     from two branches.
 * [merge-bot](https://github.com/shiftstack/merge-bot).
@@ -172,8 +172,9 @@ Lets take a brief look on what I have found during my quick research.
 
     And it can even handle dropping some commits!
 
-  * The tool seems to be completely vibecoded. I have already spottet some
-    inconsistencies that confused me.
+  * The tool seems to be completely vibecoded. I have already spotted some
+    inconsistencies that confused me. <!-- TODO: I should think whether this
+    sentence is appropriate.  -->
 
 So it seems, out of everything I have found so far, the `rebasebot` is the only
 tool that has a potential to be used in the planned flow.
@@ -181,10 +182,10 @@ tool that has a potential to be used in the planned flow.
 But we have switched from a high-level flow right to the specific
 implementations without analysing the implementation problems that need to be
 solved by the tools. So lets analyze how the implementation should look like,
-and what are the main implementation challanges here. Then we will check whether
-the `rebasebot` solves the challanges.
+and what are the main implementation challenges here. Then we will check whether
+the `rebasebot` solves the challenges.
 
-# The implementation challanges
+# The implementation challenges
 
 Lets discuss the challenges by going through every component from the "The
 general idea diagram." I presented in [the chapter above](#the-general-idea). I
@@ -198,7 +199,7 @@ way the results of the automatic rebase attempt are stored will effect the `S3`.
 
 The D1 component represents the format and place where the downstream changes
 are stored. For my case it was `git` commits and `git` repository. But for the
-cases when the automation will be lauched in CI/CDs it might be usefull to add
+cases when the automation will be launched in CI/CDs it might be useful to add
 support for both: local and remote repositories (e.g., GitHub, Gitea). This
 would make the automation more self-contained and will satisfy the first
 requirement from the [The additional requirements
@@ -242,7 +243,7 @@ branch with rebased commits. Then we can push the new branch to remote if
 needed.
 
 I am highlighting the "a new" here, because for me it is important the
-rebase automation should never force push (hence, ovewrite) somebody's commits.
+rebase automation should never force push (hence, overwrite) somebody's commits.
 The reason: even if the rebase has completed without conflicts - it does not
 mean the result will work (will build, launch, pass tests, etc.) as expected,
 because most of the tools used for rebase (e.g., `git`) do not understand the
@@ -251,11 +252,11 @@ filesystem structures (e.g., the placement of file and directories in a
 repository), the files contents, and the differences between two filesystem
 structures and files contents.
 
-Well, unless you will find a semantic version controll system that will do the
+Well, unless you will find a semantic version control system that will do the
 automatic rebase - the entity, that should decide whether the rebase was
 successful should be either a human or another automation that either understand
 the semantics somehow or will confirm the correctness of the rebase via some
-empirical experiment (e.g., a set of automatic tests perfomed on the target
+empirical experiment (e.g., a set of automatic tests performed on the target
 system using the rebased software).
 
 So, the `S4.1` should look like this:
@@ -264,8 +265,8 @@ So, the `S4.1` should look like this:
 _S4.1 action diagram_
 
 Note, that you can encode whatever you want into the name of the branch that
-will caontain the rebased commits. For my needs the name of the downstream
-branch was enogh. And the `-rebased` postfix is for identification purposes.
+will contain the rebased commits. For my needs the name of the downstream
+branch was enough. And the `-rebased` postfix is for identification purposes.
 E.g., you can consider encoding the hash of the top commit of the new base, if
 it is useful for you.
 
@@ -276,7 +277,7 @@ attempt. So it is a win-win design.
 
 ## S4.2 and D3.2
 
-Before diving into the logic for the `S4.2` we need to aswer the question what
+Before diving into the logic for the `S4.2` we need to answer the question what
 is the "Conflict data" that should be stored in `D3.2`? The are two answers
 depending on which abstraction level one wants to look:
 
@@ -367,7 +368,7 @@ ideas:
 
 For me the third option seems to be the most optimal. More than that, instead of
 creating some ref on some random commit - I can create a ref on the last
-successfully-rebased commit. This approach has three additional advanteges:
+successfully-rebased commit. This approach has three additional advantages:
 
 1. This is a way to save the rebase state even if the rebase was performed
   automatically in a CI&CD.
@@ -410,8 +411,8 @@ periodically? This periodical launch can cause two problems:
 
 2. The automation will fail every time it will try to rebase but will not be
   able to force push the `-conflict` branch if it does already exist. But it
-  will fail with inapropriate message that it cannot force-push, instead of
-  kicking the lasy developers in ass so the solve the conflict.
+  will fail with inappropriate message that it cannot force-push, instead of
+  kicking the lazy developers in ass so they solve the conflict.
 
 Hence, taking into account the above problems, the optimal solution for the `S3`
 will be:
@@ -427,7 +428,7 @@ will need:
 
 1. Turn the logic into code.
 2. Add error handling, output values, logs, etc.
-3. Add information what a developr should do for every result produced by the
+3. Add information what a developer should do for every result produced by the
   automation (I have written instructions for devs. as logs for local rebases,
   and as PRs for remote ones).
 4. Cover it with tests.
@@ -448,7 +449,7 @@ use case.
 ## The testbench
 
 Firstly, let me introduce the testbench. For testing I will be using two local
-repositories that have remote conterparts on my GitHub profile. The donwstream
+repositories that have remote counterparts on my GitHub profile. The donwstream
 repository with name `auto-rebase-script-tests` has the following downstream
 branch:
 
@@ -652,7 +653,7 @@ INFO - Dry run mode is enabled. Do not create a PR.
 
 <br>
 
-The tool, surpraisingly, finishes the rebase without any conflicts, but with the
+The tool, surprisingly, finishes the rebase without any conflicts, but with the
 following branch structure:
 
 ```bash
