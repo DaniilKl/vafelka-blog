@@ -433,6 +433,372 @@ will need:
 4. Cover it with tests.
 5. And many more.
 
+# The openshift-eng/rebasebot
+
+Lets check whether the
+[openshift-eng/rebasebot](https://github.com/openshift-eng/rebasebot) have the
+described functionalities or if it has something else to propose to cover the
+use case.
+
+> Note, that I am checking the openshift-eng/rebasebot after I have already
+> implemented the logic I have described here. So happened that I have found out
+> about this bot just when writing this blog post. Sometimes I dream of ability
+> to know everything in this world :/.
+
+## The testbench
+
+Firstly, let me introduce the testbench. For testing I will be using two local
+repositories that have remote conterparts on my GitHub profile. The donwstream
+repository with name `auto-rebase-script-tests` has the following downstream
+branch:
+
+```bash
+danik in ~/Repos/auto-rebase-script-tests on feature λ git lol
+* 68bd7e88b1b1 (HEAD -> feature) C7: feature edits line2 again
+* 9a9fcbb6c12f C6: some empty feature commit
+* 6bf2a43b8a1c C5: feature edits line2
+* 09bd53e925cd C4: feature edits line3
+* 3c5a8a05eb87 C3: some feature commit
+* 312c0a8a9f40 C2: some feature commit
+* 48d1e817815f C1: some feature commit
+* a2df0ad56e71 (origin/master, origin/HEAD, master) A: base file
+```
+
+The commits edit the only file in the repository with the following content on
+the commit `68bd7e88b1b1`:
+
+```bash
+danik in ~/Repos/auto-rebase-script-tests on feature λ cat file.txt
+line1: shared
+line2: FEATURE VERSION2
+line3: feature change
+line4: feature change
+line5: feature change
+line6: feature change
+line7: feature change
+```
+
+The upstream repository with the name `auto-rebase-script-tests-upstream` has
+the following upstream branch:
+
+```bash
+danik in ~/Repos/auto-rebase-script-tests-upstream on feature-upstream λ git lol
+* 9749a2447b0a (HEAD -> feature-upstream, origin/feature-upstream) B: feature edits line2
+* a2df0ad56e71 (origin/master) A: base file
+```
+
+The commits edit the only file in the repository with the following content on
+the commit `9749a2447b0a`:
+
+```bash
+danik in ~/Repos/auto-rebase-script-tests-upstream on feature-upstream λ cat file.txt
+line1: shared
+line2: upstream VERSION
+line3: shared
+```
+
+The upstream and downstream branches have a common ancestor:
+
+```bash
+danik in ~/Repos/auto-rebase-script-tests-upstream on feature-upstream λ git show a2df0ad56e71
+commit a2df0ad56e71518d9248ca1afec282d90e599663 (origin/master)
+Author: Daniil Klimuk <danik.klimuk13@gmail.com>
+Date:   Thu Apr 9 10:49:09 2026 +0200
+
+    A: base file
+
+diff --git a/file.txt b/file.txt
+new file mode 100644
+index 000000000000..27bb0bbea916
+--- /dev/null
++++ b/file.txt
+@@ -0,0 +1,3 @@
++line1: shared
++line2: original
++line3: shared
+```
+
+The `git rebase feature-upstream feature` should result in two conflicts:
+
+1. When applying the commit `dda06281d86b`:
+
+    ```bash
+    danik in ~/Repos/auto-rebase-script-tests on feature ● ● performing a rebase-i λ git diff
+    diff --cc file.txt
+    index f721a4c5399b,7ccf77245863..000000000000
+    --- a/file.txt
+    +++ b/file.txt
+    @@@ -1,6 -1,6 +1,11 @@@
+      line1: shared
+    ++<<<<<<< HEAD
+     +line2: upstream VERSION
+     +line3: shared
+    ++=======
+    + line2: original
+    + line3: feature change
+    ++>>>>>>> dda06281d86b (C4: feature edits line3)
+      line4: feature change
+      line5: feature change
+      line6: feature change
+    ```
+
+2. And on the commit `6f900d451bc4`:
+
+    ```bash
+    danik in ~/Repos/auto-rebase-script-tests on feature ● ● performing a rebase-i λ git diff
+    diff --cc file.txt
+    index 7d38a0443217,5e058651399f..000000000000
+    --- a/file.txt
+    +++ b/file.txt
+    @@@ -1,5 -1,5 +1,9 @@@
+      line1: shared
+    ++<<<<<<< HEAD
+     +line2: upstream VERSION
+    ++=======
+    + line2: FEATURE VERSION
+    ++>>>>>>> 6f900d451bc4 (C5: feature edits line2)
+      line3: feature change
+      line4: feature change
+      line5: feature change
+    ```
+
+After all the conflicts have been resolved and the rebase finishes we should
+finish the result should be the following:
+
+```bash
+danik in ~/Repos/auto-rebase-script-tests on feature λ git lol
+* c453f23a5583 (HEAD -> feature) C7: feature edits line2 again
+* 513b6a4110cd C6: some empty feature commit
+* 943f8d3a855c C5: feature edits line2
+* 7b0e7488a306 C4: feature edits line3
+* 33673fea21c2 C3: some feature commit
+* 32ee361ee83e C2: some feature commit
+* ac84b3568f2b C1: some feature commit
+* 9749a2447b0a (upstream/feature-upstream) B: feature edits line2
+* a2df0ad56e71 (upstream/master, origin/master, origin/HEAD, master) A: base file
+```
+
+So the history is linear and could be used for easy upstreaming of the `C[1-7]`
+commits. The file should contain:
+
+```bash
+danik in ~/Repos/auto-rebase-script-tests on feature λ cat file.txt
+line1: shared
+line2: FEATURE VERSION2
+line3: feature change
+line4: feature change
+line5: feature change
+line6: feature change
+line7: feature change
+```
+
+## Using the openshift-eng/rebasebot
+
+I am using the tool from commit `99a09a17af1693c4d7a3782d9d360db60ce2a4e5`.
+
+<details><summary> The first launch logs </summary>
+
+{% markdown %}
+
+{% highlight bash %}
+(.venv) danik in ~/Repos/rebasebot on main ● λ rebasebot --source "https://github.com/DaniilKl/auto-rebase-script-tests-upstream:feature-upstream" --dest "DaniilKl/auto-rebase-script-tests:feature" --rebase "DaniilKl/auto-rebase-script-tests:feature" --working-dir "/tmp/for-tests" --github-user-token "./token" --dry-run
+INFO - Using working directory: /tmp/for-tests
+INFO - Logging to GitHub as a User
+INFO - Logging to GitHub as a User
+INFO - Destination repository is https://github.com/DaniilKl/auto-rebase-script-tests.git
+INFO - rebase repository is https://github.com/DaniilKl/auto-rebase-script-tests.git
+INFO - source repository is https://github.com/DaniilKl/auto-rebase-script-tests-upstream.git
+INFO - Fetching feature from dest
+INFO - Fetching feature-upstream from source
+INFO - Fetching all tags from source
+INFO - Fetching all branches from source
+INFO - Checking out source/feature-upstream
+INFO - Checking for existing rebase branch feature in https://github.com/DaniilKl/auto-rebase-script-tests
+INFO - Fetching existing rebase branch
+INFO - Branches with commit:
+  source/feature-upstream
+INFO - Preparing rebase branch
+INFO - Merging upstream/feature-upstream into feature
+INFO - Performing rebase
+INFO - Merge base of source/feature-upstream and dest/feature: a2df0ad56e71518d9248ca1afec282d90e599663
+INFO - Merges on ancestry-path from merge_base=(a2df0ad56e71518d9248ca1afec282d90e599663) to dest/feature branch:
+
+INFO - Searching for merge commit from previous rebasebot run to identify downstream commits
+INFO - Didn't find last rebase merge commit. Likely this is the first upstream rebase for the                     repository. If that's not the case, something is wrong with the last rebase identification.                     Using a2df0ad56e71518d9248ca1afec282d90e599663 as cutoff commit
+INFO - Cutoff commits: ['^a2df0ad56e71518d9248ca1afec282d90e599663']
+INFO - Phase 2 - other downstream commits (7):
+41584bd14d9a05c23a730cecda3ac53515a3bdd3 || C1: some feature commit || danik.klimuk13@gmail.com
+b7b0afd48f73e3309b1cc649326a82095eb62bb3 || C2: some feature commit || danik.klimuk13@gmail.com
+5025efc20400b84d7d7f1b30c2a5494e9b9128bd || C3: some feature commit || danik.klimuk13@gmail.com
+dda06281d86b438c9d1ece5789102145779b24c4 || C4: feature edits line3 || danik.klimuk13@gmail.com
+6f900d451bc49c0f9a607fae1ebe4de0a7984dac || C5: feature edits line2 || danik.klimuk13@gmail.com
+1a31f61f3cd2485370b7868a5868b05642c75518 || C6: some empty feature commit || danik.klimuk13@gmail.com
+3e5034672e4b67fe1a6d49320035d7e69a235010 || C7: feature edits line2 again || danik.klimuk13@gmail.com
+INFO - Total downstream commits: 7
+INFO - Picking commit: 41584bd14d9a05c23a730cecda3ac53515a3bdd3 - C1: some feature commit
+INFO - Picking commit: b7b0afd48f73e3309b1cc649326a82095eb62bb3 - C2: some feature commit
+INFO - Picking commit: 5025efc20400b84d7d7f1b30c2a5494e9b9128bd - C3: some feature commit
+INFO - Picking commit: dda06281d86b438c9d1ece5789102145779b24c4 - C4: feature edits line3
+INFO - Picking commit: 6f900d451bc49c0f9a607fae1ebe4de0a7984dac - C5: feature edits line2
+INFO - Picking commit: 1a31f61f3cd2485370b7868a5868b05642c75518 - C6: some empty feature commit
+INFO - Picking commit: 3e5034672e4b67fe1a6d49320035d7e69a235010 - C7: feature edits line2 again
+INFO - Checking for ART pull request
+INFO - Dry run mode is enabled. Do not create a PR.
+{% endhighlight %}
+
+{% endmarkdown %}
+
+</details>
+
+<br>
+
+The tool, surpraisingly, finishes the rebase without any conflicts, but with the
+following branch structure:
+
+```bash
+danik in ~/Repos/auto-rebase-script-tests on rebase-first-attemptλ git lol
+* 394f65bf797e (HEAD -> rebase-first-attempt, origin/rebase-first-attempt) C7: feature edits line2 again
+* 6fef2b0a47aa C6: some empty feature commit
+* faef6dd0d65b C5: feature edits line2
+* da05a2be5ffa C4: feature edits line3
+* 55010e5e1847 C3: some feature commit
+* ecf5df19a134 C2: some feature commit
+* b0f3cd5a50ca C1: some feature commit
+*   9de9c447ea6e merge upstream/feature-upstream into feature
+|\
+| * 9749a2447b0a (upstream/feature-upstream) B: feature edits line2
+* | 3e5034672e4b (origin/feature) C7: feature edits line2 again
+* | 1a31f61f3cd2 C6: some empty feature commit
+* | 6f900d451bc4 C5: feature edits line2
+* | dda06281d86b C4: feature edits line3
+* | 5025efc20400 C3: some feature commit
+* | b7b0afd48f73 C2: some feature commit
+* | 41584bd14d9a C1: some feature commit
+|/
+* a2df0ad56e71 (upstream/master, origin/master, origin/HEAD, master) A: base file
+```
+
+I guess that is how the non-linear history looks like. Lest add a one more
+commit to the `feature-upstream` that will cause another conflict:
+
+```bash
+danik in ~/Repos/auto-rebase-script-tests on feature-upstream λ git show
+commit 0c1435ac701392f5b0a78071a5b5387226cea8d0 (HEAD -> feature-upstream, upstream/feature-upstream)
+Author: Daniil Klimuk <danik.klimuk13@gmail.com>
+Date:   Tue May 12 21:55:43 2026 +0200
+
+    B1: feature edits line 2 again
+
+    Signed-off-by: Daniil Klimuk <danik.klimuk13@gmail.com>
+
+diff --git a/file.txt b/file.txt
+index 765cf070fc65..1aef70e2e93b 100644
+--- a/file.txt
++++ b/file.txt
+@@ -1,3 +1,3 @@
+ line1: shared
+-line2: upstream VERSION
++line2: upstream VERSION2
+ line3: shared
+```
+
+And do the rebase again.
+
+<details><summary> The second rebase logs </summary>
+
+{% markdown %}
+
+{% highlight bash %}
+(.venv) danik in ~/Repos/rebasebot on main ● λ rebasebot --source "https://github.com/DaniilKl/auto-rebase-script-tests-upstream:feature-upstream" --dest "DaniilKl/auto-rebase-script-tests:rebase-first-attempt" --rebase "DaniilKl/auto-rebase-script-tests:rebase-first-attempt" --working-dir "/tmp/for-tests" --github-user-token "./token" --dry-run
+INFO - Using working directory: /tmp/for-tests
+INFO - Logging to GitHub as a User
+INFO - Logging to GitHub as a User
+INFO - Destination repository is https://github.com/DaniilKl/auto-rebase-script-tests.git
+INFO - rebase repository is https://github.com/DaniilKl/auto-rebase-script-tests.git
+INFO - source repository is https://github.com/DaniilKl/auto-rebase-script-tests-upstream.git
+INFO - Fetching rebase-first-attempt from dest
+INFO - Fetching feature-upstream from source
+INFO - Fetching all tags from source
+INFO - Fetching all branches from source
+INFO - Checking out source/feature-upstream
+INFO - Checking for existing rebase branch rebase-first-attempt in https://github.com/DaniilKl/auto-rebase-script-tests
+INFO - Fetching existing rebase branch
+INFO - Branches with commit:
+  source/feature-upstream
+INFO - Preparing rebase branch
+INFO - Merging upstream/feature-upstream into rebase-first-attempt
+INFO - Performing rebase
+INFO - Merge base of source/feature-upstream and dest/rebase-first-attempt: 9749a2447b0a166c883b8052d72dbf8f7f67c443
+INFO - Merges on ancestry-path from merge_base=(9749a2447b0a166c883b8052d72dbf8f7f67c443) to dest/rebase-first-attempt branch:
+9de9c447ea6eb3dc198d6f9446a0c83cfaab1ca9 || merge upstream/feature-upstream into feature || danik.klimuk13@gmail.com
+INFO - Searching for merge commit from previous rebasebot run to identify downstream commits
+INFO - Found merge commit from previous rebase: 9de9c447ea6eb3dc198d6f9446a0c83cfaab1ca9
+INFO - Its parent 9749a2447b0a166c883b8052d72dbf8f7f67c443 is on an upstream branch
+INFO - Cutoff commits: ['^3e5034672e4b67fe1a6d49320035d7e69a235010', '^9749a2447b0a166c883b8052d72dbf8f7f67c443']
+INFO - Could not find rebase PR merge on dest, skipping phase 1
+INFO - Phase 2 - other downstream commits (7):
+b0f3cd5a50caf4c7d0faa3ffcea4c3261416ed2d || C1: some feature commit || danik.klimuk13@gmail.com
+ecf5df19a134c9bd610a4e06b2b3b7b79fc67bd6 || C2: some feature commit || danik.klimuk13@gmail.com
+55010e5e18470518a0c0649be195504e62e086f3 || C3: some feature commit || danik.klimuk13@gmail.com
+da05a2be5ffa945294a9bda63c0b3f6896fe2832 || C4: feature edits line3 || danik.klimuk13@gmail.com
+faef6dd0d65b8ed26910184568ce34bf501b2642 || C5: feature edits line2 || danik.klimuk13@gmail.com
+6fef2b0a47aac96620974609cf234aa5b631f754 || C6: some empty feature commit || danik.klimuk13@gmail.com
+394f65bf797e29dfa3e940e2ee04dd59ea93c681 || C7: feature edits line2 again || danik.klimuk13@gmail.com
+INFO - Total downstream commits: 7
+INFO - Picking commit: b0f3cd5a50caf4c7d0faa3ffcea4c3261416ed2d - C1: some feature commit
+INFO - Picking commit: ecf5df19a134c9bd610a4e06b2b3b7b79fc67bd6 - C2: some feature commit
+INFO - Picking commit: 55010e5e18470518a0c0649be195504e62e086f3 - C3: some feature commit
+INFO - Picking commit: da05a2be5ffa945294a9bda63c0b3f6896fe2832 - C4: feature edits line3
+INFO - Picking commit: faef6dd0d65b8ed26910184568ce34bf501b2642 - C5: feature edits line2
+INFO - Picking commit: 6fef2b0a47aac96620974609cf234aa5b631f754 - C6: some empty feature commit
+INFO - Picking commit: 394f65bf797e29dfa3e940e2ee04dd59ea93c681 - C7: feature edits line2 again
+INFO - Checking for ART pull request
+INFO - Dry run mode is enabled. Do not create a PR.
+{% endhighlight %}
+
+{% endmarkdown %}
+</details>
+
+<br>
+
+And the branch structure after the second attempt:
+
+```bash
+danik in ~/Repos/auto-rebase-script-tests on rebase-second-attempt λ git lol
+* ddc7f9264420 (HEAD -> rebase-second-attempt, origin/rebase-second-attempt) C7: feature edits line2 again
+* 9633a8ee4d9b C6: some empty feature commit
+* 54c98bed5832 C5: feature edits line2
+* 0945663de419 C4: feature edits line3
+* bf72600daf1e C3: some feature commit
+* b8f27430066b C2: some feature commit
+* ed73ca24e534 C1: some feature commit
+*   37175c178f05 merge upstream/feature-upstream into rebase-first-attempt
+|\
+| * 0c1435ac7013 (upstream/feature-upstream, feature-upstream) B1: feature edits line 2 again
+* | 394f65bf797e (origin/rebase-first-attempt, origin/rebase, rebase-first-attempt, rebase) C7: feature edits line2 again
+* | 6fef2b0a47aa C6: some empty feature commit
+* | faef6dd0d65b C5: feature edits line2
+* | da05a2be5ffa C4: feature edits line3
+* | 55010e5e1847 C3: some feature commit
+* | ecf5df19a134 C2: some feature commit
+* | b0f3cd5a50ca C1: some feature commit
+* | 9de9c447ea6e merge upstream/feature-upstream into feature
+|\|
+| * 9749a2447b0a B: feature edits line2
+* | 3e5034672e4b (origin/feature) C7: feature edits line2 again
+* | 1a31f61f3cd2 C6: some empty feature commit
+* | 6f900d451bc4 C5: feature edits line2
+* | dda06281d86b C4: feature edits line3
+* | 5025efc20400 C3: some feature commit
+* | b7b0afd48f73 C2: some feature commit
+* | 41584bd14d9a C1: some feature commit
+|/
+* a2df0ad56e71 (upstream/master, origin/master, origin/HEAD, master) A: base file
+```
+
+I am not sure whether it is a good idea or not to have such history. To me it
+seems odd.
+
 # The conclusions
 
 
