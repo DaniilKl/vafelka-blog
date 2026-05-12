@@ -1,0 +1,12 @@
+@startuml
+start
+
+if (Any\nDOWNSTREAM_BRANCH_NAME-*-conflict\nbranches in downstream reposiotory?) then (yes)
+    :Ask to manage the -conflict branches;
+    end
+else
+    :"git rebase UPSTREAM_BRANCH_NAME DOWNSTREAM_BRANCH_NAME";
+endif
+
+stop
+@enduml

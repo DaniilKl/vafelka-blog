@@ -1,0 +1,20 @@
+@startuml
+start
+
+if (Use local repo?) then (yes)
+else if (Use GitHub repo?) then (yes)
+    : "cd" to downstream repo location;
+    :Add the upstream repo as\nan additional remote to the\ndownstream repo;
+    :Fetch the repo from GitHub;
+    :"cd -";
+else if (Use Gitea repo?) then (yes)
+    : "cd" to downstream repo location;
+    :Add the upstream repo as\nan additional remote to the\ndownstream repo;
+    :Fetch the repo from Gitea;
+    :"cd -";
+else (no)
+    :...;
+endif
+
+stop
+@enduml

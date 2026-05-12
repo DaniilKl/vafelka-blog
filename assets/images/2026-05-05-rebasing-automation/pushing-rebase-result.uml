@@ -1,0 +1,27 @@
+@startuml
+start
+
+:Check out the top rebased commit;
+:Create branch with name\nDOWNSTREAM_BRANCH_NAME-rebased;
+
+if (Local repo is used?) then (yes)
+else if (GitHub repo is used?) then (yes)
+    if (Does DOWNSTREAM_BRANCH_NAME-rebased\nexist on GitHub?) then (yes)
+        :Report that cannot force-push;
+        stop
+    endif
+    
+    :Push DOWNSTREAM_BRANCH_NAME-rebased\nto GitHub;
+else if (Gitea repo is used?) then (yes)
+    if (Does DOWNSTREAM_BRANCH_NAME-rebased\nexist on Gitea?) then (yes)
+        :Report that cannot force-push;
+        stop
+    endif
+    
+    :Push DOWNSTREAM_BRANCH_NAME-rebased\nto Gitea;
+else
+    :...;
+endif
+
+stop
+@enduml

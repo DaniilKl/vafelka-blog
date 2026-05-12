@@ -1,0 +1,14 @@
+@startuml
+start
+
+if (Use local repo?) then (yes)
+else if (Use GitHub repo?) then (yes)
+    :Fetch the repo from GitHub;
+else if (Use Gitea repo?) then (yes)
+    :Fetch the repo from Gitea;
+else (no)
+    :...;
+endif
+
+stop
+@enduml
