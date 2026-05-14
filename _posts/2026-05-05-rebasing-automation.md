@@ -7,7 +7,7 @@ excerpt_separator: <!--more-->
 ---
 
 Just wanted to share some ideas on the automation of such a boring recurrent
-manual work in programmings as "rebasing". Be prepared for some dense theory
+manual work in programming as "rebasing". Be prepared for some dense theory
 with examples.
 
 <!--more-->
@@ -15,13 +15,14 @@ with examples.
 # The general idea
 
 So, some time ago I was asked to figure out a rebase automation to reduce amount
-of outdated forks and downstream branches in company by continuously rebasing it
-on top of the newest upstream. The idea was simple: add an automation that will
-try to rebase on top of the upstream **periodically** (like once per week, or
-once per day in case of some really active upstream branches) so the company
-will reduce one of the reasons of the outdated forks: **when the fork developers
-forget or do not have time** to even check whether the upstream has updates and
-whether rebasing on top of these updates will introduce any conflicts.
+of outdated forks and downstream branches in company by continuously rebasing
+them on top of the newest upstream. The idea was simple: add an automation that
+will try to rebase on top of the upstream **periodically** (like once per week,
+or once per day in case of some really active upstream branches) so the company
+will reduce one of the reasons of the outdated changes: **when the fork
+developers forget or do not have time** to even check whether the upstream has
+updates and whether rebasing on top of these updates will introduce any
+conflicts.
 
 So, the automation should have the following inputs:
 
@@ -36,7 +37,8 @@ And the automation should produce the following outputs:
 
 1. A rebased on top of the upstream branch downstream branch in case there is no
   conflicts.
-2. A set of data about the conflict in case the automated rebase met a conflict.
+2. A set of data about the conflict in case the automated rebase meets a
+  conflict.
 
 As you can see, the automation should not try to resolve the conflict by itself.
 Instead it should stop and provide a sufficient set of data for a human or
@@ -98,9 +100,9 @@ Lets take a brief look on what I have found during my quick research.
 * [rebase-helper](https://github.com/rebase-helper/rebase-helper).
   * This is an interesting tool for RPM package rebase automation. The tool
     checks the `.spec.in` file, apply the patches from the `.spec.in` file to
-    the source of some component via `git` and the rebase the applied patches on
-    top of new upstream using `git`. Not my use case, but might be useful for
-    RPM rebases.
+    the source of some component via `git` and rebase the applied patches on top
+    of new upstream using `git`. Not my use case, but might be useful for RPM
+    rebases.
 * [chrisledet/rebasebot](https://github.com/chrisledet/rebasebot).
   * Seems to be too tied to GitHub and GitHub's webhooks.
   * The last commit was 10 years ago.
@@ -111,7 +113,8 @@ Lets take a brief look on what I have found during my quick research.
 * [rebase-upstream-action](https://github.com/imba-tjd/rebase-upstream-action).
   * Yet another GitHub action.
 * [rbt](https://github.com/jacobsee/rbt).
-  * Not quite what I need.
+  * Not quite what I need. This tool more about management than the actual
+    rebasing.
   * The tool might be very useful for complex projects and rebases because of
     its upstream status visualisation and the comparison of the same commit but
     from two branches.
@@ -120,7 +123,7 @@ Lets take a brief look on what I have found during my quick research.
   * No options to test it on local repositories.
 * [openshift-eng/rebasebot](https://github.com/openshift-eng/rebasebot).
   * That one seems to handle automatic rebase, at least the readme says so.
-  * After a quick look in its source code I have actually found the function
+  * After a quick look on its source code I have actually found the function
     responsible for the rebase:
 
       ```python
@@ -172,9 +175,8 @@ Lets take a brief look on what I have found during my quick research.
 
     And it can even handle dropping some commits!
 
-  * The tool seems to be completely vibecoded. I have already spotted some
-    inconsistencies that confused me. <!-- TODO: I should think whether this
-    sentence is appropriate.  -->
+  * The tool seems to be completely vibecoded, the code and documentation is a
+    bit confusing and seems to be not ready for human interpretation.
 
 So it seems, out of everything I have found so far, the `rebasebot` is the only
 tool that has a potential to be used in the planned flow.
@@ -192,12 +194,12 @@ general idea diagram." I presented in [the chapter above](#the-general-idea). I
 will reference the components by their IDs from the diagram (e.g., the `S1`, or
 `D1`).
 
-But I want to go through the `S4.1` and `S4.2` before touching the `S3`, as the
-way the results of the automatic rebase attempt are stored will effect the `S3`.
+I want to go through the `S4.1` and `S4.2` before touching the `S3`, as the way
+the results of the automatic rebase attempt are stored will effect the `S3`.
 
 ## S1 and D1
 
-The D1 component represents the format and place where the downstream changes
+The `D1` component represents the format and place where the downstream changes
 are stored. For my case it was `git` commits and `git` repository. But for the
 cases when the automation will be launched in CI/CDs it might be useful to add
 support for both: local and remote repositories (e.g., GitHub, Gitea). This
@@ -227,7 +229,7 @@ rebase as `git` commits and `git` repositories. So the outputs should adhere to
 the same format so the automation could be called in loop without surplus
 conversion between the inputs and outputs format or some other automation that
 understands the `git` could, without any conversions, consume the result of this
-automation. Why the loop? Well, I will get to it later.
+automation. Why the loop?
 
 The question is, how to store the data from the `D3.1` block using only the
 `git` refs? For the `D3.1` the solution is simple and is the result of the
@@ -247,7 +249,7 @@ rebase automation should never force push (hence, overwrite) somebody's commits.
 The reason: even if the rebase has completed without conflicts - it does not
 mean the result will work (will build, launch, pass tests, etc.) as expected,
 because most of the tools used for rebase (e.g., `git`) do not understand the
-semantics of the code they operate on, and work mostly on such categories as
+semantics of the code they operate on and work mostly on such categories as
 filesystem structures (e.g., the placement of file and directories in a
 repository), the files contents, and the differences between two filesystem
 structures and files contents.
@@ -299,8 +301,8 @@ depending on which abstraction level one wants to look:
     information which commit and when caused the conflict. This would be usable
     as a direct inptu to some conflict resolution tool.
 
-2. The `git` refs and commits data level. E.g., when `git` reports you that a
-  conflict has been faced, for example:
+2. The `git` refs and commits data level. E.g., when `git` reports you that it
+  faced a conflict, for example:
 
     ```bash
     λ git rebase feature-1.2 feature-2
@@ -317,9 +319,9 @@ depending on which abstraction level one wants to look:
 
     As you can see we can get the following information:
 
-    a. When the conflict was faced: when rebasing the branch `feature-2` on top
+    1. When the conflict was faced: when rebasing the branch `feature-2` on top
       of the `feature-1.2`.
-    b. What commit introduced the conflict: the commit with hash `b175ce38688b`.
+    2. What commit introduced the conflict: the commit with hash `b175ce38688b`.
 
 Considering the idea of the automation is to only check for the conflicts, and
 not resolve them or directly launch a tool that will resolve the conflict in
@@ -328,7 +330,8 @@ appropriate here, because:
 
 1. The data still has the format of the `git` commits and `git` refs. This will
   be consistent with the `D3.1`.
-2. This is the sufficient amount of data for some other tool (e.g., a tool for
+2. This is small amount of data to store.
+3. This is a sufficient amount of data for some other tool (e.g., a tool for
   automatic conflict resolution) to reproduce the conflict.
 
 Ok, now we know what we need to store. The next question is how to store it? The
@@ -440,11 +443,6 @@ Lets check whether the
 [openshift-eng/rebasebot](https://github.com/openshift-eng/rebasebot) have the
 described functionalities or if it has something else to propose to cover the
 use case.
-
-> Note, that I am checking the openshift-eng/rebasebot after I have already
-> implemented the logic I have described here. So happened that I have found out
-> about this bot just when writing this blog post. Sometimes I dream of ability
-> to know everything in this world :/.
 
 ## The testbench
 
