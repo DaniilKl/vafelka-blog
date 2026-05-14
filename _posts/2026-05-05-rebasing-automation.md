@@ -808,3 +808,6 @@ GNU tools and `curl` is enough. And you can create a tests for it in BATS.
 
 I have a few other side quests for this topic I might write a blog post about.
 I hope you will enjoy them too :).
+
+<center><em>To be able to devote oneself completely to something is already a
+talent.</em></center>
