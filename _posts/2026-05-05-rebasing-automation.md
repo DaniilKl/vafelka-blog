@@ -798,7 +798,8 @@ danik in ~/Repos/auto-rebase-script-tests on rebase-second-attempt λ git lol
 ```
 
 I am not sure whether it is a good idea or not to have such history. To me it
-seems odd.
+seems odd. Can it cause problems when, for example, trying to upstream the
+commits from the downstream branch?
 
 # The conclusions
 
