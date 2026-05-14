@@ -1,0 +1,29 @@
+@startuml
+start
+
+->Assuming still inside "git rebase";
+:Get the COMMIT_HASH via "cat .git/REBASE_HEAD";
+:Create branch DOWNSTREAM_BRANCH_NAME-COMMIT_HASH-conflict;
+:"git rebase --abort";
+
+if (Local repo is used?) then (yes)
+else if (GitHub repo is used?) then (yes)
+    if (Does DOWNSTREAM_BRANCH_NAME-COMMIT_HASH-conflict\nexist on GitHub?) then (yes)
+        :Report that cannot force-push;
+        end
+    endif
+    
+    :Push DOWNSTREAM_BRANCH_NAME-COMMIT_HASH-conflict\nto GitHub;
+else if (Gitea repo is used?) then (yes)
+    if (Does DOWNSTREAM_BRANCH_NAME-COMMIT_HASH-conflict\nexist on Gitea?) then (yes)
+        :Report that cannot force-push;
+        end
+    endif
+    
+    :Push DOWNSTREAM_BRANCH_NAME-COMMIT_HASH-conflict\nto Gitea;
+else
+    :...;
+endif
+
+stop
+@enduml

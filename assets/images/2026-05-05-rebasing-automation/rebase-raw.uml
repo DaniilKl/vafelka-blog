@@ -1,0 +1,7 @@
+@startuml
+start
+
+:"git rebase UPSTREAM_BRANCH_NAME DOWNSTREAM_BRANCH_NAME";
+
+stop
+@enduml
