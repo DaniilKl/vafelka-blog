@@ -803,4 +803,10 @@ commits from the downstream branch?
 
 # The conclusions
 
+Thank you for reading my blog post. As you can see, there is no a lot of
+solutions for the problem I presented. On the other hand, the solution is not
+that complex to create by yourself. In my opinion a Bash script that uses `git`
+GNU tools and `curl` is enough. And you can create a tests for it in BATS.
 
+I have a few other side quests for this topic I might write a blog post about.
+I hope you will enjoy them too :).
